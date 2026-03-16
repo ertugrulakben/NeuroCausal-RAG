@@ -1,0 +1,71 @@
+# NeuroCausal RAG Configuration
+# Version: 6.0.0
+# Author: Ertugrul Akben
+# Website: https://ertugrulakben.com
+
+version: "6.0.0"
+debug: false
+data_dir: "./data"
+
+embedding:
+  model_name: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+  dimension: 384
+  normalize: true
+  cache_enabled: true
+  cache_ttl_hours: 1
+  max_cache_size: 1000
+
+graph:
+  pagerank_alpha: 0.85
+  max_causal_depth: 3
+  importance_default: 0.5
+
+search:
+  top_k: 5
+  alpha: 0.5  # Similarity weight (arttirildi - Topic Drift fix)
+  beta: 0.3   # Causal weight (azaltildi)
+  gamma: 0.2  # Importance weight
+
+index:
+  backend: "brute_force"
+  faiss_index_type: "flat"
+  faiss_nlist: 100
+  faiss_nprobe: 10
+  milvus_host: "localhost"
+  milvus_port: 19530
+  milvus_collection: "neurocausal"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 1000
+  api_key_env: "OPENAI_API_KEY"
+
+learning:
+  enabled: true
+  min_confidence: 0.7
+  learning_rate: 0.1
+  discovery_threshold: 0.75
+  auto_approve: false
+
+gnn:
+  enabled: true
+  input_dim: 384
+  hidden_dim: 128
+  output_dim: 64
+  num_relations: 5
+  num_layers: 2
+  dropout: 0.2
+  use_attention: true
+  train_epochs: 50
+  learning_rate: 0.001
+
+system:
+  verbose: false
+  log_level: "INFO"
+  output_dir: "output"
+  graph_file: "neurocausal_graph.json"
+  num_workers: 4
+  batch_size: 32
+  use_cuda: true

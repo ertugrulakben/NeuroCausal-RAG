@@ -1,0 +1,162 @@
+{
+  "test_documents": [
+    {
+      "id": "doc1",
+      "content": "Tesla 2023 yilinda 500 milyar dolar degerlemeye ulasti.",
+      "metadata": {
+        "source": "financial_report",
+        "date": "2023-06-15",
+        "category": "finance"
+      }
+    },
+    {
+      "id": "doc2",
+      "content": "Elon Musk, Tesla'nin CEO'su olarak sirketi yonetiyor.",
+      "metadata": {
+        "source": "news",
+        "date": "2023-01-10",
+        "category": "corporate"
+      }
+    },
+    {
+      "id": "doc3",
+      "content": "Elektrikli arac satislari arttigi icin Tesla hisseleri yukseldi.",
+      "metadata": {
+        "source": "market_analysis",
+        "date": "2023-07-20",
+        "category": "market"
+      }
+    },
+    {
+      "id": "doc4",
+      "content": "Mavi Ufuk projesi = Gunes Enerjisi A.S. satin almasi kod adidir.",
+      "metadata": {
+        "source": "internal_memo",
+        "date": "2023-02-01",
+        "category": "internal"
+      }
+    },
+    {
+      "id": "doc5",
+      "content": "Mavi Ufuk projesi 100 milyon dolar butceyle baslatildi.",
+      "metadata": {
+        "source": "project_doc",
+        "date": "2023-03-15",
+        "category": "project"
+      }
+    }
+  ],
+  "contradicting_documents": [
+    {
+      "id": "contra1",
+      "content": "Sirket 2023'te 100 milyon dolar kar etti.",
+      "metadata": {
+        "source": "report_a",
+        "date": "2023-12-01"
+      }
+    },
+    {
+      "id": "contra2",
+      "content": "Sirket 2023'te 50 milyon dolar kar etti.",
+      "metadata": {
+        "source": "report_b",
+        "date": "2023-12-15"
+      }
+    },
+    {
+      "id": "contra3",
+      "content": "Proje basarili oldu ve hedeflere ulasildi.",
+      "metadata": {
+        "source": "report_c",
+        "date": "2023-11-01"
+      }
+    },
+    {
+      "id": "contra4",
+      "content": "Proje basarisiz oldu ve hedeflere ulasilamadi.",
+      "metadata": {
+        "source": "report_d",
+        "date": "2023-11-15"
+      }
+    }
+  ],
+  "temporal_documents": [
+    {
+      "id": "temp1",
+      "content": "Ocak 2023'te urun lansmani yapildi.",
+      "metadata": {
+        "date": "2023-01-15"
+      }
+    },
+    {
+      "id": "temp2",
+      "content": "Mart 2023'te satislar artti.",
+      "metadata": {
+        "date": "2023-03-01"
+      }
+    },
+    {
+      "id": "temp3",
+      "content": "Haziran 2023'te yeni ozellikler eklendi.",
+      "metadata": {
+        "date": "2023-06-01"
+      }
+    },
+    {
+      "id": "temp4",
+      "content": "Aralik 2022'de Ar-Ge calismalari basladi.",
+      "metadata": {
+        "date": "2022-12-01"
+      }
+    }
+  ],
+  "alias_documents": [
+    {
+      "id": "alias1",
+      "content": "Proje Fenix, sirketin yeni ERP sistemi kod adidir.",
+      "metadata": {}
+    },
+    {
+      "id": "alias2",
+      "content": "Proje Fenix 2024'te tamamlanacak.",
+      "metadata": {}
+    },
+    {
+      "id": "alias3",
+      "content": "ERP sistemi tum departmanlari kapsayacak.",
+      "metadata": {}
+    },
+    {
+      "id": "alias4",
+      "content": "Ahmet Bey (CEO) toplantiya katildi.",
+      "metadata": {}
+    }
+  ],
+  "causal_chain_documents": [
+    {
+      "id": "chain1",
+      "content": "2022-01-01: Ar-Ge ekibi yeni teknoloji gelistirdi.",
+      "causal_order": 1
+    },
+    {
+      "id": "chain2",
+      "content": "2022-06-15: Prototip basariyla test edildi.",
+      "causal_order": 2
+    },
+    {
+      "id": "chain3",
+      "content": "2023-01-01: Urun pazara sunuldu.",
+      "causal_order": 3
+    },
+    {
+      "id": "chain4",
+      "content": "2023-06-01: Satislar beklentileri asti.",
+      "causal_order": 4
+    },
+    {
+      "id": "chain5",
+      "content": "2023-12-01: Sirket kar payi dagitti.",
+      "causal_order": 5
+    }
+  ]
+}

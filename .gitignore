@@ -1,0 +1,95 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# Database files
+*.db
+*.sqlite3
+feedback.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Neo4j data
+neo4j/data/
+neo4j/logs/
+neo4j/plugins/
+
+# Milvus data
+milvus/
+
+# Temp files
+*.tmp
+*.temp
+*.bak
+*.old
+
+# PyVis output
+graph_*.html
+network.html
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model cache
+.cache/
+models/
+
+# Local config overrides
+config.local.yaml
+config.local.json
+*.bat
+*.lnk
+examples/makale-test/

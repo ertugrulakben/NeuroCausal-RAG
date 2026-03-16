@@ -1,0 +1,56 @@
+{
+  "scenarios": [
+    {
+      "id": "temporal_contradiction_01",
+      "type": "temporal",
+      "query": "Did the CEO resign before the merger?",
+      "facts": [
+        {
+          "text": "CEO resigned in 2020.",
+          "date": "2020-01-01"
+        },
+        {
+          "text": "The merger happened in 2019.",
+          "date": "2019-01-01"
+        }
+      ],
+      "expected_result": {
+        "contradiction": false,
+        "temporal_order": "merger -> resignation"
+      }
+    },
+    {
+      "id": "logical_contradiction_01",
+      "type": "contradiction",
+      "query": "Is the company profitable?",
+      "facts": [
+        {
+          "text": "The company reported a record profit.",
+          "source": "Report A"
+        },
+        {
+          "text": "The company is facing bankruptcy due to losses.",
+          "source": "Report B"
+        }
+      ],
+      "expected_result": {
+        "contradiction": true,
+        "conflict_score": 0.9
+      }
+    },
+    {
+      "id": "multi_hop_01",
+      "type": "multi_hop",
+      "query": "What is the effect of interest rates on inflation?",
+      "chain": [
+        "Interest Rates",
+        "Investment",
+        "Consumer Spending",
+        "Inflation"
+      ],
+      "expected_result": {
+        "path_found": true
+      }
+    }
+  ]
+}

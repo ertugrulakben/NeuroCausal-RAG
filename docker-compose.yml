@@ -1,0 +1,243 @@
+# NeuroCausal RAG v5.0 - Docker Compose
+# Production-ready setup with Neo4j, Milvus, Streamlit App, and FastAPI
+#
+# Kullanim:
+#   docker-compose up -d           # Tum servisleri baslat
+#   docker-compose logs -f api     # API loglarini izle
+#   docker-compose logs -f app     # Streamlit loglarini izle
+#   docker-compose down            # Durdur
+#
+# Portlar:
+#   - 8501: Streamlit UI
+#   - 8000: FastAPI (Swagger: /docs)
+#   - 7474: Neo4j Browser
+#   - 19530: Milvus
+#
+# Yazar: Ertugrul Akben
+
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # FASTAPI REST API
+  # ==========================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: neurocausal-api
+    command: uvicorn neurocausal_rag.api.app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-neurocausal123}
+      - MILVUS_HOST=milvus
+      - MILVUS_PORT=19530
+      - USE_NEO4J=${USE_NEO4J:-false}
+      - USE_MILVUS=${USE_MILVUS:-false}
+      - NEUROCAUSAL_API_KEYS=${NEUROCAUSAL_API_KEYS:-}
+      - DEBUG=${DEBUG:-false}
+    volumes:
+      - ./data:/app/data
+      - ./neurocausal_rag:/app/neurocausal_rag
+      - feedback-data:/app/feedback
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      milvus:
+        condition: service_started
+    networks:
+      - neurocausal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ==========================================================================
+  # STREAMLIT APPLICATION
+  # ==========================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: neurocausal-app
+    ports:
+      - "${APP_PORT:-8501}:8501"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-neurocausal123}
+      - MILVUS_HOST=milvus
+      - MILVUS_PORT=19530
+      - USE_NEO4J=${USE_NEO4J:-false}
+      - USE_MILVUS=${USE_MILVUS:-false}
+    volumes:
+      - ./data:/app/data
+      - ./neurocausal_rag:/app/neurocausal_rag
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      milvus:
+        condition: service_started
+    networks:
+      - neurocausal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================================================
+  # NEO4J - GRAPH DATABASE
+  # ==========================================================================
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: neurocausal-neo4j
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"   # Browser UI
+      - "${NEO4J_BOLT_PORT:-7687}:7687"   # Bolt protocol
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neurocausal123}
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+      - NEO4J_dbms_memory_pagecache_size=512M
+      - NEO4J_dbms_memory_heap_initial__size=512M
+      - NEO4J_dbms_memory_heap_max__size=1G
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*,gds.*
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-plugins:/plugins
+    networks:
+      - neurocausal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ==========================================================================
+  # MILVUS - VECTOR DATABASE
+  # ==========================================================================
+  # Milvus Standalone (etcd + minio + milvus)
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: neurocausal-etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - etcd-data:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - neurocausal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: neurocausal-minio
+    environment:
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio-data:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    networks:
+      - neurocausal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  milvus:
+    image: milvusdb/milvus:v2.3.4
+    container_name: neurocausal-milvus
+    command: ["milvus", "run", "standalone"]
+    environment:
+      - ETCD_ENDPOINTS=etcd:2379
+      - MINIO_ADDRESS=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - milvus-data:/var/lib/milvus
+    ports:
+      - "${MILVUS_PORT:-19530}:19530"
+      - "${MILVUS_GRPC_PORT:-9091}:9091"
+    depends_on:
+      - etcd
+      - minio
+    networks:
+      - neurocausal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 90s
+
+  # ==========================================================================
+  # MILVUS ADMIN UI (Optional)
+  # ==========================================================================
+  attu:
+    image: zilliz/attu:v2.3.5
+    container_name: neurocausal-attu
+    environment:
+      - MILVUS_URL=milvus:19530
+    ports:
+      - "${ATTU_PORT:-3000}:3000"
+    depends_on:
+      - milvus
+    networks:
+      - neurocausal-network
+    restart: unless-stopped
+    profiles:
+      - admin  # Only start with: docker-compose --profile admin up
+
+# ==========================================================================
+# NETWORKS
+# ==========================================================================
+networks:
+  neurocausal-network:
+    driver: bridge
+
+# ==========================================================================
+# VOLUMES
+# ==========================================================================
+volumes:
+  neo4j-data:
+    driver: local
+  neo4j-logs:
+    driver: local
+  neo4j-plugins:
+    driver: local
+  etcd-data:
+    driver: local
+  minio-data:
+    driver: local
+  milvus-data:
+    driver: local
+  feedback-data:
+    driver: local
