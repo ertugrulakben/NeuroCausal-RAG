@@ -25,7 +25,7 @@
 
 ---
 
-> **Research Context:** In June 2025, researchers at the University of Illinois Urbana-Champaign published "[CC-RAG: Structured Multi-Hop Reasoning via Theme-Based Causal Graphs](https://arxiv.org/abs/2506.xxxxx)" — a breakthrough paper that brought causal reasoning into RAG systems. The academic world was excited: RAG could finally "understand and connect," not just "find and fetch."
+> **Research Context:** In June 2025, researchers at the University of Illinois Urbana-Champaign published "CC-RAG: Structured Multi-Hop Reasoning via Theme-Based Causal Graphs" — a breakthrough paper that brought causal reasoning into RAG systems. The academic world was excited: RAG could finally "understand and connect," not just "find and fetch."
 >
 > **We had already been doing this for two months.** NeuroCausal RAG v5.0 was deployed to production in April 2025. The causal engine, multi-hop retrieval, and chain injection were already running in real enterprise environments.
 >
