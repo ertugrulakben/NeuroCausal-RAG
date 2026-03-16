@@ -1,14 +1,13 @@
 """
 NeuroCausal RAG - Search Optimizer
-v5.2 - FAZ 2.2
 
-Hibrit arama optimizasyonu:
-1. Sorgu analizi ile otomatik agirlik ayarlama
-2. Arama modu presetleri
-3. Sonuc cesitlendirme (diversification)
-4. Adaptif re-ranking
+Hybrid search optimization:
+1. Automatic weight tuning via query analysis
+2. Search mode presets
+3. Result diversification
+4. Adaptive re-ranking
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import re

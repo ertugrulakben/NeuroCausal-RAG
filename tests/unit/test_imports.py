@@ -3,7 +3,7 @@ NeuroCausal RAG - Import and Circular Dependency Tests
 Verifies all major imports work, __version__ is accessible, __all__ is correct,
 and submodule imports do not cause circular dependency errors.
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest

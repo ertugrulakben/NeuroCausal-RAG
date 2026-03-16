@@ -1,19 +1,18 @@
 """
 NeuroCausal RAG - Query Decomposer
-v5.2 - FAZ 2.3
 
-Karmasik sorgulari alt sorgulara ayirma ve birlestirme.
+Decomposing complex queries into sub-queries and merging results.
 
-Ornek:
-    Orijinal: "Sera gazlari buzullari nasil etkiler ve bu deniz seviyesini nasil yukseltir?"
+Example:
+    Original: "How do greenhouse gases affect glaciers and how does this raise sea levels?"
 
-    Alt sorgular:
-    1. "Sera gazlari buzullari nasil etkiler?"
-    2. "Buzul erimesi deniz seviyesini nasil etkiler?"
+    Sub-queries:
+    1. "How do greenhouse gases affect glaciers?"
+    2. "How does glacier melting affect sea levels?"
 
-    Her alt sorgu ayri aranir, sonuclar birlestirilir.
+    Each sub-query is searched separately, then results are merged.
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import re

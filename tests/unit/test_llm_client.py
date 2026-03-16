@@ -2,7 +2,7 @@
 NeuroCausal RAG - LLM Client Tests
 Mock-based tests for LLMClient initialization, generation, evaluation, token counting
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest

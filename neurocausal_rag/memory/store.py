@@ -1,14 +1,8 @@
 """
 NeuroCausal RAG - Memory Store
-v5.2 - Kalıcı Hafıza Sistemi
+Persistent Memory System
 
-Özellikler:
-1. Kullanıcı notları ve gözlemleri
-2. Manuel nedensellik ekleme/silme
-3. Model geri bildirimi entegrasyonu
-4. Sıfırlama ve yedekleme
-
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import json
@@ -25,17 +19,17 @@ logger = logging.getLogger(__name__)
 
 
 class FeedbackType(Enum):
-    """Geri bildirim türleri"""
-    POSITIVE = "positive"      # Bu işe yaradı
-    NEGATIVE = "negative"      # Bu işe yaramadı
-    CORRECTION = "correction"  # Düzeltme
-    MANUAL_ADD = "manual_add"  # Manuel ekleme
-    MANUAL_DEL = "manual_del"  # Manuel silme
+    """Feedback types"""
+    POSITIVE = "positive"      # This worked
+    NEGATIVE = "negative"      # This did not work
+    CORRECTION = "correction"  # Correction
+    MANUAL_ADD = "manual_add"  # Manual addition
+    MANUAL_DEL = "manual_del"  # Manual deletion
 
 
 @dataclass
 class MemoryNote:
-    """Kullanıcı notu"""
+    """User note"""
     id: str
     content: str
     related_docs: List[str] = field(default_factory=list)
@@ -53,16 +47,16 @@ class MemoryNote:
 
 @dataclass
 class CausalFeedback:
-    """Nedensellik geri bildirimi"""
+    """Causal feedback"""
     id: str
-    source_id: str           # Kaynak doküman
-    target_id: str           # Hedef doküman
+    source_id: str           # Source document
+    target_id: str           # Target document
     relation_type: str       # causes, supports, etc.
     feedback_type: str       # positive, negative, correction
-    user_note: str = ""      # Kullanıcı açıklaması
-    confidence: float = 1.0  # Güven skoru
+    user_note: str = ""      # User explanation
+    confidence: float = 1.0  # Confidence score
     created_at: str = ""
-    is_applied: bool = False # Graf'a uygulandı mı
+    is_applied: bool = False # Applied to graph?
 
     def __post_init__(self):
         if not self.created_at:
@@ -71,7 +65,7 @@ class CausalFeedback:
 
 @dataclass
 class MemoryStats:
-    """Hafıza istatistikleri"""
+    """Memory statistics"""
     total_notes: int = 0
     total_feedbacks: int = 0
     positive_feedbacks: int = 0
@@ -83,24 +77,24 @@ class MemoryStats:
 
 class MemoryStore:
     """
-    Kalıcı Hafıza Deposu
+    Persistent Memory Store
 
-    SQLite tabanlı kalıcı depolama ile kullanıcı notlarını,
-    manuel düzenlemeleri ve model geri bildirimlerini saklar.
+    SQLite-based persistent storage for user notes,
+    manual edits, and model feedback.
 
     Kullanım:
         store = MemoryStore("memory.db")
 
-        # Not ekle
-        store.add_note("Bu sorgu iyi çalıştı", related_docs=["doc1"])
+        # Add note
+        store.add_note("This query worked well", related_docs=["doc1"])
 
-        # Nedensellik ekle (manuel)
-        store.add_causal_relation("doc_a", "doc_b", "causes", note="Kesinlikle neden olur")
+        # Add causality (manual)
+        store.add_causal_relation("doc_a", "doc_b", "causes", note="Definitely causes")
 
-        # Geri bildirim ver
+        # Give feedback
         store.add_feedback("doc_x", "doc_y", "causes", FeedbackType.POSITIVE)
 
-        # Sıfırla
+        # Reset
         store.reset()
     """
 
@@ -111,8 +105,8 @@ class MemoryStore:
     ):
         """
         Args:
-            db_path: SQLite veritabanı dosya yolu
-            auto_create: Veritabanı yoksa otomatik oluştur
+            db_path: SQLite database file path
+            auto_create: Auto-create database if missing
         """
         self.db_path = db_path
 
@@ -120,11 +114,11 @@ class MemoryStore:
             self._init_db()
 
     def _init_db(self) -> None:
-        """Veritabanı tablolarını oluştur"""
+        """Create database tables"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        # Notlar tablosu
+        # Notes table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS notes (
                 id TEXT PRIMARY KEY,
@@ -137,7 +131,7 @@ class MemoryStore:
             )
         ''')
 
-        # Geri bildirimler tablosu
+        # Feedbacks table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS feedbacks (
                 id TEXT PRIMARY KEY,
@@ -152,7 +146,7 @@ class MemoryStore:
             )
         ''')
 
-        # İstatistikler tablosu
+        # Statistics table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS stats (
                 key TEXT PRIMARY KEY,
@@ -165,7 +159,7 @@ class MemoryStore:
 
         logger.info(f"Memory database initialized: {self.db_path}")
 
-    # ==================== NOT YÖNETİMİ ====================
+    # ==================== NOTE MANAGEMENT ====================
 
     def add_note(
         self,
@@ -175,16 +169,16 @@ class MemoryStore:
         tags: Optional[List[str]] = None
     ) -> MemoryNote:
         """
-        Not ekle.
+        Add note.
 
         Args:
-            content: Not içeriği
-            related_docs: İlişkili doküman ID'leri
-            related_queries: İlişkili sorgular
-            tags: Etiketler
+            content: Note content
+            related_docs: Related document IDs
+            related_queries: Related queries
+            tags: Tags
 
         Returns:
-            Oluşturulan not
+            Created note
         """
         note_id = f"note_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
 
@@ -224,7 +218,7 @@ class MemoryStore:
         doc_id: Optional[str] = None,
         limit: int = 100
     ) -> List[MemoryNote]:
-        """Notları getir"""
+        """Get notes"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -259,7 +253,7 @@ class MemoryStore:
         return notes
 
     def delete_note(self, note_id: str) -> bool:
-        """Notu sil"""
+        """Delete note"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
@@ -268,7 +262,7 @@ class MemoryStore:
         conn.close()
         return deleted
 
-    # ==================== NEDENSELLİK YÖNETİMİ ====================
+    # ==================== CAUSALITY MANAGEMENT ====================
 
     def add_causal_relation(
         self,
@@ -279,17 +273,17 @@ class MemoryStore:
         confidence: float = 1.0
     ) -> CausalFeedback:
         """
-        Manuel nedensellik ilişkisi ekle.
+        Add manual causal relation.
 
         Args:
-            source_id: Kaynak doküman ID
-            target_id: Hedef doküman ID
-            relation_type: İlişki türü (causes, supports, requires, related)
-            note: Açıklama
-            confidence: Güven skoru (0-1)
+            source_id: Source document ID
+            target_id: Target document ID
+            relation_type: Relation type (causes, supports, requires, related)
+            note: Explanation
+            confidence: Confidence score (0-1)
 
         Returns:
-            Oluşturulan geri bildirim
+            Created feedback record
         """
         return self._add_feedback(
             source_id, target_id, relation_type,
@@ -303,10 +297,10 @@ class MemoryStore:
         note: str = ""
     ) -> CausalFeedback:
         """
-        Nedensellik ilişkisini kaldır (silme işareti).
+        Remove causal relation (deletion marker).
 
-        Bu işlem graf'tan silmez, sadece silme işareti koyar.
-        Uygulama sırasında bu işarete göre ilişki kaldırılır.
+        This does not delete from graph, only places a deletion marker.
+        The relation is removed when the marker is applied.
         """
         return self._add_feedback(
             source_id, target_id, "",
@@ -322,14 +316,14 @@ class MemoryStore:
         note: str = ""
     ) -> CausalFeedback:
         """
-        Model/kullanıcı geri bildirimi ekle.
+        Add model/user feedback.
 
         Args:
-            source_id: Kaynak doküman
-            target_id: Hedef doküman
-            relation_type: İlişki türü
-            is_positive: Olumlu mu olumsuz mu
-            note: Açıklama
+            source_id: Source document
+            target_id: Target document
+            relation_type: Relation type
+            is_positive: Positive or negative
+            note: Explanation
         """
         feedback_type = FeedbackType.POSITIVE.value if is_positive else FeedbackType.NEGATIVE.value
         return self._add_feedback(
@@ -346,7 +340,7 @@ class MemoryStore:
         note: str,
         confidence: float
     ) -> CausalFeedback:
-        """Geri bildirim ekle (internal)"""
+        """Add feedback (internal)"""
         feedback_id = f"fb_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
 
         feedback = CausalFeedback(
@@ -391,7 +385,7 @@ class MemoryStore:
         pending_only: bool = False,
         limit: int = 100
     ) -> List[CausalFeedback]:
-        """Geri bildirimleri getir"""
+        """Get feedback records"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
@@ -430,7 +424,7 @@ class MemoryStore:
         return feedbacks
 
     def mark_feedback_applied(self, feedback_id: str) -> bool:
-        """Geri bildirimi uygulandı olarak işaretle"""
+        """Mark feedback as applied"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute(
@@ -443,31 +437,31 @@ class MemoryStore:
         return updated
 
     def get_pending_additions(self) -> List[CausalFeedback]:
-        """Bekleyen manuel eklemeleri getir"""
+        """Get pending manual additions"""
         return self.get_feedbacks(
             feedback_type=FeedbackType.MANUAL_ADD.value,
             pending_only=True
         )
 
     def get_pending_deletions(self) -> List[CausalFeedback]:
-        """Bekleyen manuel silmeleri getir"""
+        """Get pending manual deletions"""
         return self.get_feedbacks(
             feedback_type=FeedbackType.MANUAL_DEL.value,
             pending_only=True
         )
 
-    # ==================== İSTATİSTİKLER ====================
+    # ==================== STATISTICS ====================
 
     def get_stats(self) -> MemoryStats:
-        """Hafıza istatistiklerini getir"""
+        """Get memory statistics"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        # Not sayısı
+        # Note count
         cursor.execute("SELECT COUNT(*) FROM notes")
         total_notes = cursor.fetchone()[0]
 
-        # Geri bildirim sayıları
+        # Feedback counts
         cursor.execute("SELECT COUNT(*) FROM feedbacks")
         total_feedbacks = cursor.fetchone()[0]
 
@@ -499,19 +493,19 @@ class MemoryStore:
             last_updated=datetime.now().isoformat()
         )
 
-    # ==================== SIFIRLAMA / YEDEK ====================
+    # ==================== RESET / BACKUP ====================
 
     def reset(self, confirm: bool = False) -> bool:
         """
-        Tüm hafızayı sıfırla.
+        Reset all memory.
 
-        UYARI: Bu işlem geri alınamaz!
+        WARNING: This operation cannot be undone!
 
         Args:
-            confirm: Onay bayrağı (True olmalı)
+            confirm: Confirmation flag (must be True)
 
         Returns:
-            Başarılı ise True
+            True if successful
         """
         if not confirm:
             logger.warning("Reset cancelled: confirm=False")
@@ -532,13 +526,13 @@ class MemoryStore:
 
     def export_to_json(self, output_path: str) -> str:
         """
-        Tüm hafızayı JSON olarak dışa aktar.
+        Export all memory as JSON.
 
         Args:
-            output_path: Çıktı dosya yolu
+            output_path: Output file path
 
         Returns:
-            Dosya yolu
+            File path
         """
         notes = self.get_notes(limit=10000)
         feedbacks = self.get_feedbacks(limit=10000)
@@ -559,13 +553,13 @@ class MemoryStore:
 
     def import_from_json(self, input_path: str) -> Tuple[int, int]:
         """
-        JSON'dan hafıza içe aktar.
+        Import memory from JSON.
 
         Args:
-            input_path: Girdi dosya yolu
+            input_path: Input file path
 
         Returns:
-            (not_sayısı, geri_bildirim_sayısı)
+            (notes_count, feedbacks_count)
         """
         with open(input_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -573,7 +567,7 @@ class MemoryStore:
         notes_imported = 0
         feedbacks_imported = 0
 
-        # Notları içe aktar
+        # Import notes
         for note_data in data.get("notes", []):
             self.add_note(
                 content=note_data["content"],
@@ -583,7 +577,7 @@ class MemoryStore:
             )
             notes_imported += 1
 
-        # Geri bildirimleri içe aktar
+        # Import feedbacks
         for fb_data in data.get("feedbacks", []):
             self._add_feedback(
                 source_id=fb_data["source_id"],

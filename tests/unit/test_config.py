@@ -2,7 +2,7 @@
 NeuroCausal RAG - Config Validation Tests
 Pydantic model validation, YAML loading, weight constraints, defaults
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest
@@ -41,7 +41,7 @@ class TestDefaultConfig:
 
     def test_default_version(self):
         config = NeuroCausalConfig()
-        assert config.version == "5.2.0"
+        assert config.version == "6.1.0"
 
     def test_default_debug_is_false(self):
         config = NeuroCausalConfig()

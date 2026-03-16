@@ -1,17 +1,17 @@
 """
 NeuroCausal RAG - Named Entity Recognition
-Metinden entity'leri (varlıkları) çıkarır.
+Extracts entities from text.
 
-Desteklenen entity türleri:
-- PERSON: Kişi isimleri (Ahmet Yılmaz, Elon Musk)
-- ORG: Organizasyonlar (Güneş Enerjisi A.Ş., Tesla)
-- PROJECT: Proje isimleri (Mavi Ufuk, Project X)
-- PRODUCT: Ürün isimleri
-- LOCATION: Yerler (İstanbul, Avrupa)
-- DATE: Tarihler (2025, Mart 2024)
-- MONEY: Para miktarları (1.2 Milyar $)
+Supported entity types:
+- PERSON: Person names (Ahmet Yılmaz, Elon Musk)
+- ORG: Organizations (Güneş Enerjisi A.Ş., Tesla)
+- PROJECT: Project names (Mavi Ufuk, Project X)
+- PRODUCT: Product names
+- LOCATION: Places (İstanbul, Avrupa)
+- DATE: Dates (2025, Mart 2024)
+- MONEY: Money amounts (1.2 Milyar $)
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import re
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ExtractedEntity:
-    """Çıkarılan entity"""
+    """Extracted entity"""
     text: str
     entity_type: str
     start: int
@@ -37,36 +37,36 @@ class ExtractedEntity:
 
 class EntityExtractor:
     """
-    Regex ve pattern-based Named Entity Recognition.
+    Regex and pattern-based Named Entity Recognition.
 
-    spaCy veya Transformers kullanmadan basit ama etkili NER.
-    Türkçe ve İngilizce destekli.
+    Simple but effective NER without spaCy or Transformers.
+    Turkish and English supported.
     """
 
-    # Türkçe isim kalıpları
+    # Turkish name patterns
     TURKISH_NAME_PATTERN = r'\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+)\b'
 
-    # Organizasyon kalıpları
+    # Organization patterns
     ORG_PATTERNS = [
         r'\b([A-ZÇĞİÖŞÜa-zçğıöşü\s]+)\s+(?:A\.Ş\.|AŞ|Ltd\.|Şti\.|Inc\.|Corp\.|LLC|GmbH)\b',
         r'\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)*)\s+(?:Holding|Grubu|Group|Bank|Bankası)\b',
         r'\b(?:Şirket|Company|Firma)\s+([A-ZÇĞİÖŞÜa-zçğıöşü\s]+)\b',
     ]
 
-    # Proje kalıpları
+    # Project patterns
     PROJECT_PATTERNS = [
         r'\b(?:Proje|Project)\s+["\']?([A-ZÇĞİÖŞÜa-zçğıöşü\s]+)["\']?\b',
         r'\b["\']?([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)*)["\']?\s+(?:projesi|projesinin|project)\b',
         r'\b(?:kod adı|code name)\s*:?\s*["\']?([A-ZÇĞİÖŞÜa-zçğıöşü\s]+)["\']?\b',
     ]
 
-    # Para miktarı kalıpları
+    # Money amount patterns
     MONEY_PATTERNS = [
         r'(\d+(?:[.,]\d+)*)\s*(?:Milyar|Milyon|Bin|K|M|B)?\s*(?:\$|USD|EUR|€|TL|TRY|dolar|euro|lira)',
         r'(?:\$|USD|EUR|€|TL)\s*(\d+(?:[.,]\d+)*)\s*(?:Milyar|Milyon|Bin|K|M|B)?',
     ]
 
-    # Tarih kalıpları
+    # Date patterns
     DATE_PATTERNS = [
         r'\b(\d{1,2})\s+(?:Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık)\s+(\d{4})\b',
         r'\b(?:Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık)\s+(\d{4})\b',
@@ -74,14 +74,14 @@ class EntityExtractor:
         r'\b(\d{4})\b',  # Yıl
     ]
 
-    # Konum kalıpları
+    # Location patterns
     LOCATION_PATTERNS = [
         r'\b(İstanbul|Ankara|İzmir|Bursa|Antalya|Adana)\b',
         r'\b(Türkiye|Turkey|Almanya|Germany|Fransa|France|ABD|USA|Avrupa|Europe)\b',
         r'\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)\s+(?:pazarı|pazarında|bölgesi|bölgesinde)\b',
     ]
 
-    # Unvan/Rol kalıpları (kişi tespiti için)
+    # Title/Role patterns (for person detection)
     TITLE_PATTERNS = [
         r'\b(?:Sayın|Bay|Bayan|Mr\.|Mrs\.|Ms\.|Dr\.)\s+([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+)\b',
         r'\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)+)\s+(?:CEO|CFO|CTO|CISO|Başkan|Müdür|Yönetici)\b',
@@ -90,7 +90,7 @@ class EntityExtractor:
     def __init__(self, use_spacy: bool = False):
         """
         Args:
-            use_spacy: True ise spaCy modelini kullan (daha doğru ama yavaş)
+            use_spacy: If True, use spaCy model (more accurate but slower)
         """
         self.use_spacy = use_spacy
         self._spacy_nlp = None
@@ -99,29 +99,29 @@ class EntityExtractor:
             self._load_spacy()
 
     def _load_spacy(self):
-        """spaCy modelini yükle (opsiyonel)"""
+        """Load spaCy model (optional)"""
         try:
             import spacy
             try:
                 self._spacy_nlp = spacy.load("tr_core_news_md")
-                logger.info("spaCy Türkçe modeli yüklendi")
+                logger.info("spaCy Turkish model loaded")
             except OSError:
                 try:
                     self._spacy_nlp = spacy.load("en_core_web_sm")
-                    logger.info("spaCy İngilizce modeli yüklendi")
+                    logger.info("spaCy English model loaded")
                 except OSError:
-                    logger.warning("spaCy modeli bulunamadı, regex-based NER kullanılacak")
+                    logger.warning("spaCy model not found, using regex-based NER")
                     self.use_spacy = False
         except ImportError:
-            logger.warning("spaCy kurulu değil, regex-based NER kullanılacak")
+            logger.warning("spaCy not installed, using regex-based NER")
             self.use_spacy = False
 
     def extract_entities(self, text: str) -> List[ExtractedEntity]:
         """
-        Metinden tüm entity'leri çıkar.
+        Extract all entities from text.
 
         Args:
-            text: Analiz edilecek metin
+            text: Text to analyze
 
         Returns:
             List of ExtractedEntity objects
@@ -131,7 +131,7 @@ class EntityExtractor:
         return self._extract_with_regex(text)
 
     def _extract_with_spacy(self, text: str) -> List[ExtractedEntity]:
-        """spaCy ile entity çıkarma"""
+        """Entity extraction with spaCy"""
         entities = []
         doc = self._spacy_nlp(text)
 
@@ -149,7 +149,7 @@ class EntityExtractor:
         return entities
 
     def _map_spacy_label(self, label: str) -> Optional[str]:
-        """spaCy label'ını bizim formatımıza çevir"""
+        """Map spaCy label to our format"""
         mapping = {
             'PER': 'PERSON',
             'PERSON': 'PERSON',
@@ -163,11 +163,11 @@ class EntityExtractor:
         return mapping.get(label)
 
     def _extract_with_regex(self, text: str) -> List[ExtractedEntity]:
-        """Regex ile entity çıkarma"""
+        """Entity extraction with regex"""
         entities = []
-        seen_spans = set()  # Overlapping'i önlemek için
+        seen_spans = set()  # To prevent overlapping
 
-        # Kişi isimleri (unvanlı)
+        # Person names (with titles)
         for pattern in self.TITLE_PATTERNS:
             for match in re.finditer(pattern, text, re.IGNORECASE):
                 span = (match.start(), match.end())
@@ -182,7 +182,7 @@ class EntityExtractor:
                     ))
                     seen_spans.add(span)
 
-        # Organizasyonlar
+        # Organizations
         for pattern in self.ORG_PATTERNS:
             for match in re.finditer(pattern, text, re.IGNORECASE):
                 span = (match.start(), match.end())
@@ -197,7 +197,7 @@ class EntityExtractor:
                     ))
                     seen_spans.add(span)
 
-        # Projeler
+        # Projects
         for pattern in self.PROJECT_PATTERNS:
             for match in re.finditer(pattern, text, re.IGNORECASE):
                 span = (match.start(), match.end())
@@ -212,7 +212,7 @@ class EntityExtractor:
                     ))
                     seen_spans.add(span)
 
-        # Para miktarları
+        # Money amounts
         for pattern in self.MONEY_PATTERNS:
             for match in re.finditer(pattern, text, re.IGNORECASE):
                 span = (match.start(), match.end())
@@ -226,7 +226,7 @@ class EntityExtractor:
                     ))
                     seen_spans.add(span)
 
-        # Tarihler
+        # Dates
         for pattern in self.DATE_PATTERNS:
             for match in re.finditer(pattern, text, re.IGNORECASE):
                 span = (match.start(), match.end())
@@ -240,7 +240,7 @@ class EntityExtractor:
                     ))
                     seen_spans.add(span)
 
-        # Konumlar
+        # Locations
         for pattern in self.LOCATION_PATTERNS:
             for match in re.finditer(pattern, text, re.IGNORECASE):
                 span = (match.start(), match.end())
@@ -258,7 +258,7 @@ class EntityExtractor:
         return entities
 
     def _overlaps(self, span: Tuple[int, int], seen_spans: set) -> bool:
-        """Verilen span mevcut span'larla çakışıyor mu?"""
+        """Does the given span overlap with existing spans?"""
         start, end = span
         for s_start, s_end in seen_spans:
             if not (end <= s_start or start >= s_end):
@@ -266,38 +266,38 @@ class EntityExtractor:
         return False
 
     def extract_entities_by_type(self, text: str, entity_type: str) -> List[ExtractedEntity]:
-        """Belirli bir türdeki entity'leri çıkar"""
+        """Extract entities of a specific type"""
         all_entities = self.extract_entities(text)
         return [e for e in all_entities if e.entity_type == entity_type]
 
     def find_persons(self, text: str) -> List[str]:
-        """Metindeki kişi isimlerini bul"""
+        """Find person names in text"""
         entities = self.extract_entities_by_type(text, 'PERSON')
         return [e.text for e in entities]
 
     def find_organizations(self, text: str) -> List[str]:
-        """Metindeki organizasyonları bul"""
+        """Find organizations in text"""
         entities = self.extract_entities_by_type(text, 'ORG')
         return [e.text for e in entities]
 
     def find_projects(self, text: str) -> List[str]:
-        """Metindeki proje isimlerini bul"""
+        """Find project names in text"""
         entities = self.extract_entities_by_type(text, 'PROJECT')
         return [e.text for e in entities]
 
     def find_money_amounts(self, text: str) -> List[str]:
-        """Metindeki para miktarlarını bul"""
+        """Find money amounts in text"""
         entities = self.extract_entities_by_type(text, 'MONEY')
         return [e.text for e in entities]
 
 
 def extract_all_entities(documents: List[Dict], use_spacy: bool = False) -> Dict[str, List[ExtractedEntity]]:
     """
-    Tüm dokümanlardan entity'leri çıkar.
+    Extract entities from all documents.
 
     Args:
         documents: [{'id': str, 'content': str}, ...]
-        use_spacy: spaCy kullan mı?
+        use_spacy: Use spaCy?
 
     Returns:
         {doc_id: [entities], ...}
@@ -316,7 +316,7 @@ def extract_all_entities(documents: List[Dict], use_spacy: bool = False) -> Dict
 
 def build_entity_graph(documents: List[Dict]) -> Dict[str, set]:
     """
-    Dokümanlardan entity co-occurrence grafiği oluştur.
+    Build entity co-occurrence graph from documents.
 
     Returns:
         {entity_name: {related_entities}, ...}
@@ -324,7 +324,7 @@ def build_entity_graph(documents: List[Dict]) -> Dict[str, set]:
     extractor = EntityExtractor()
     entity_docs = {}  # entity → [doc_ids]
 
-    # Her entity'nin hangi dokümanlarda geçtiğini bul
+    # Find which documents each entity appears in
     for doc in documents:
         doc_id = doc.get('id', 'unknown')
         content = doc.get('content', '')
@@ -335,7 +335,7 @@ def build_entity_graph(documents: List[Dict]) -> Dict[str, set]:
                 entity_docs[entity.text] = []
             entity_docs[entity.text].append(doc_id)
 
-    # Aynı dokümanda geçen entity'leri ilişkilendir
+    # Relate entities that appear in the same document
     entity_relations = {name: set() for name in entity_docs}
 
     for doc in documents:

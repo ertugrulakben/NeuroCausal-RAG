@@ -1,8 +1,7 @@
 """
 NeuroCausal RAG - Multi-Hop Retrieval Tests
-v5.2 - FAZ 2.1
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest

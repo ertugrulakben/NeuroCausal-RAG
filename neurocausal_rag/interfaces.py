@@ -2,9 +2,7 @@
 NeuroCausal RAG - Abstract Interfaces
 Strategy Pattern için Abstract Base Classes
 
-Yazar: Ertugrul Akben
-E-posta: i@ertugrulakben.com
-Versiyon: 4.0.0
+Author: Ertugrul Akben
 """
 
 from abc import ABC, abstractmethod
@@ -27,12 +25,12 @@ class SearchResult:
     importance_score: float
     causal_chain: Optional[List[str]] = None
     metadata: Optional[Dict] = None
-    resolved_entities: Optional[List[str]] = None  # Entity linking sonuclari
+    resolved_entities: Optional[List[str]] = None  # Entity linking results
 
 
 @dataclass
 class EntityResolution:
-    """Entity linking sonucu"""
+    """Entity linking result"""
     original_query: str
     enriched_query: str
     resolved_aliases: Dict[str, str]  # alias -> canonical

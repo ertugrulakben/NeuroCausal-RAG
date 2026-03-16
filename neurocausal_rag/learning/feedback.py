@@ -22,7 +22,7 @@ Architecture:
     │                                                                  │
     └─────────────────────────────────────────────────────────────────┘
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 from typing import List, Dict, Any, Optional, Tuple

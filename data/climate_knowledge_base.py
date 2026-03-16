@@ -1,21 +1,19 @@
 """
-NeuroCausal RAG - Türkçe İklim Değişikliği Bilgi Tabanı
-115+ döküman (Sadece ham veri - nedensel ilişki YOK!)
+NeuroCausal RAG - Turkish Climate Change Knowledge Base
+115+ documents (Raw data only - NO causal relations!)
 
-ÖNEMLİ: Bu dosya SADECE dökümanları içerir.
-        Nedensel ilişkiler MANUEL tanımlanmaz!
-        AutoCausalDiscovery modülü bunları OTOMATİK keşfeder.
+IMPORTANT: This file contains ONLY documents.
+           Causal relations are NOT manually defined!
+           AutoCausalDiscovery module discovers them AUTOMATICALLY.
 
-Yazar: Ertugrul Akben
-E-posta: i@ertugrulakben.com
-Versiyon: 4.0.0
+Author: Ertugrul Akben
 """
 
 # =============================================================================
-# DÖKÜMANLAR - 100+ Türkçe içerik
+# DOCUMENTS - 100+ Turkish content
 # =============================================================================
 DOCUMENTS = [
-    # TEMEL KAVRAMLAR (1-15)
+    # BASIC CONCEPTS (1-15)
     {"id": "iklim_tanimi", "content": "İklim, bir bölgede uzun yıllar boyunca gözlemlenen ortalama hava koşullarıdır. Sıcaklık, yağış, nem ve rüzgar gibi atmosferik olayların uzun vadeli ortalamasını ifade eder.", "category": "temel"},
     {"id": "iklim_degisikligi", "content": "İklim değişikliği, iklim örüntülerindeki uzun vadeli değişimleri ifade eder. İnsan faaliyetlerinden kaynaklanan sera gazı emisyonları nedeniyle hızlanmıştır.", "category": "temel"},
     {"id": "kuresel_isinma", "content": "Küresel ısınma, Dünya'nın ortalama yüzey sıcaklığının artmasıdır. Son 100 yılda yaklaşık 1.1°C artış gözlemlenmiştir.", "category": "temel"},
@@ -32,7 +30,7 @@ DOCUMENTS = [
     {"id": "kriyosfer", "content": "Kriyosfer, Dünya'nın buzla kaplı bölgelerini ifade eder. Kutup buzulları, dağ buzulları ve permafrost buna dahildir.", "category": "temel"},
     {"id": "hidrosfer", "content": "Hidrosfer, Dünya'daki tüm su kaynaklarını kapsar. Okyanuslar, göller, nehirler ve yer altı suları bu sistemin parçasıdır.", "category": "temel"},
 
-    # NEDENLER (16-35)
+    # CAUSES (16-35)
     {"id": "fosil_yakit", "content": "Fosil yakıtlar (kömür, petrol, doğalgaz) yanınca CO2 açığa çıkar. Enerji üretiminin %80'i fosil yakıtlardan sağlanır.", "category": "neden"},
     {"id": "komur_yanmasi", "content": "Kömür yanması en kirli enerji kaynağıdır. Megawatt başına en yüksek CO2 emisyonuna neden olur.", "category": "neden"},
     {"id": "petrol_tuketimi", "content": "Petrol, ulaşım sektörünün temel yakıtıdır. Taşıtlar küresel CO2 emisyonlarının %16'sından sorumludur.", "category": "neden"},
@@ -54,7 +52,7 @@ DOCUMENTS = [
     {"id": "kentlesme", "content": "Kentleşme arazi kullanımını değiştirir, karbon yutaklarını azaltır ve enerji tüketimini artırır.", "category": "neden"},
     {"id": "permafrost_erime", "content": "Permafrost eridikçe içindeki metan ve CO2 atmosfere salınır. Bu pozitif geri besleme döngüsü oluşturur.", "category": "neden"},
 
-    # SONUÇLAR (36-65)
+    # EFFECTS (36-65)
     {"id": "sicaklik_artisi", "content": "Küresel ortalama sıcaklık son 100 yılda 1.1°C arttı. Bu artış dengesiz dağılır, kutuplar daha fazla ısınır.", "category": "sonuc"},
     {"id": "buzul_erimesi", "content": "Buzullar hızla eriyor. Grönland ve Antarktika'dan yılda 270 milyar ton buz kaybediliyor.", "category": "sonuc"},
     {"id": "deniz_seviyesi", "content": "Deniz seviyesi 1900'den bu yana 20 cm yükseldi. 2100'e kadar 1 metreye kadar yükselebilir.", "category": "sonuc"},
@@ -86,7 +84,7 @@ DOCUMENTS = [
     {"id": "enerji_talep", "content": "Soğutma için enerji talebi artıyor. Sıcak havada klima kullanımı emisyonları artırır.", "category": "sonuc"},
     {"id": "kentsel_isi", "content": "Kentsel ısı adası etkisi güçleniyor. Şehirler çevrelerinden 2-3°C daha sıcak olabiliyor.", "category": "sonuc"},
 
-    # ÇÖZÜMLER (66-90)
+    # SOLUTIONS (66-90)
     {"id": "yenilenebilir_enerji", "content": "Yenilenebilir enerji (güneş, rüzgar, hidro) fosil yakıtlara temiz alternatiftir. Maliyetler hızla düşüyor.", "category": "cozum"},
     {"id": "gunes_enerjisi", "content": "Güneş enerjisi en hızlı büyüyen enerji kaynağı. Solar panel maliyeti %90 düştü.", "category": "cozum"},
     {"id": "ruzgar_enerjisi", "content": "Rüzgar enerjisi önemli bir potansiyele sahip. Karasal ve deniz üstü rüzgar çiftlikleri yaygınlaşıyor.", "category": "cozum"},
@@ -113,7 +111,7 @@ DOCUMENTS = [
     {"id": "uyum_stratejisi", "content": "Adaptasyon stratejileri iklim etkilerine uyum sağlamayı hedefler.", "category": "cozum"},
     {"id": "erken_uyari", "content": "Erken uyarı sistemleri aşırı hava olaylarından korunmayı sağlar.", "category": "cozum"},
 
-    # BİLİMSEL ÖLÇÜMLER (91-105)
+    # SCIENTIFIC MEASUREMENTS (91-105)
     {"id": "co2_ppm", "content": "Atmosferik CO2 konsantrasyonu 420 ppm'e ulaştı. Sanayi öncesi dönemde 280 ppm'di.", "category": "olcum"},
     {"id": "ipcc_rapor", "content": "IPCC (Hükümetlerarası İklim Değişikliği Paneli) iklim biliminin en yetkili kaynağıdır.", "category": "olcum"},
     {"id": "iklim_modeli", "content": "İklim modelleri gelecek senaryolarını simüle eder. Farklı emisyon yolları incelenir.", "category": "olcum"},
@@ -130,7 +128,7 @@ DOCUMENTS = [
     {"id": "geri_besleme", "content": "Geri besleme döngüleri ısınmayı güçlendirebilir veya zayıflatabilir.", "category": "olcum"},
     {"id": "iklim_duyarlılık", "content": "İklim duyarlılığı CO2 iki katına çıktığında sıcaklık artışını ifade eder. 2.5-4°C arasında tahmin ediliyor.", "category": "olcum"},
 
-    # TÜRKİYE ÖZELİNDE (106-115)
+    # TURKEY SPECIFIC (106-115)
     {"id": "turkiye_iklim", "content": "Türkiye Akdeniz iklim bölgesinde özellikle risk altındadır. Sıcaklık 1.5°C arttı.", "category": "turkiye"},
     {"id": "turkiye_kuraklik", "content": "Türkiye'de kuraklık yaygınlaşıyor. Konya Ovası ve İç Anadolu su stresi altında.", "category": "turkiye"},
     {"id": "turkiye_sel", "content": "Karadeniz bölgesinde şiddetli sel olayları artıyor. 2021 Kastamonu seli örnek.", "category": "turkiye"},
@@ -145,29 +143,29 @@ DOCUMENTS = [
 
 
 # =============================================================================
-# KULLANIM
+# USAGE
 # =============================================================================
 def get_documents():
-    """Tüm dökümanları döndür"""
+    """Return all documents"""
     return DOCUMENTS
 
 
 def get_documents_by_category(category: str):
-    """Kategoriye göre dökümanları filtrele"""
+    """Filter documents by category"""
     return [d for d in DOCUMENTS if d.get("category") == category]
 
 
 def get_document_count():
-    """Döküman sayısını döndür"""
+    """Return document count"""
     return len(DOCUMENTS)
 
 
 if __name__ == "__main__":
-    print(f"Toplam döküman: {get_document_count()}")
-    print("\nKategoriler:")
+    print(f"Total documents: {get_document_count()}")
+    print("\nCategories:")
     categories = set(d.get("category") for d in DOCUMENTS)
     for cat in sorted(categories):
         count = len(get_documents_by_category(cat))
-        print(f"  - {cat}: {count} döküman")
-    print("\nNOT: Nedensel ilişkiler TANIMLANMADI!")
-    print("      AutoCausalDiscovery modülü bunları OTOMATİK keşfeder.")
+        print(f"  - {cat}: {count} documents")
+    print("\nNOTE: Causal relations NOT DEFINED!")
+    print("      AutoCausalDiscovery module discovers them AUTOMATICALLY.")

@@ -7,7 +7,7 @@ Tools:
 - GraphTool: Graph navigation and exploration
 - VerifyTool: Fact verification against sources
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 from typing import List, Dict, Any, Optional, Callable

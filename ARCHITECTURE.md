@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            NeuroCausal RAG v5.2                             │
+│                            NeuroCausal RAG v6.1                             │
 │                   "Nedensel Zincirlerle Akilli Arama"                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
@@ -18,7 +18,7 @@
 │                                    │                                        │
 │                                    ▼                                        │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
-│  │                         REASONING LAYER (v5.1)                        │  │
+│  │                         REASONING LAYER                                │  │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                   │  │
 │  │  │   Entity    │  │Contradiction│  │  Temporal   │                   │  │
 │  │  │   Linking   │  │  Detection  │  │  Reasoning  │                   │  │
@@ -408,7 +408,7 @@ Toplam: 103 test
 
 ## Performans Ozellikleri
 
-| Metrik | v5.0 | v5.1 | v5.2 |
+| Metrik | v5.0 | v5.1 | v6.1 |
 |--------|------|------|------|
 | Max Dokuman | 10M+ | 10M+ | 10M+ |
 | Graf Sorgu | O(log N) | O(log N) | O(log N) |
@@ -440,7 +440,7 @@ Toplam: 103 test
 
 ---
 
-## v5.2 Yeni Moduller
+## v6.1 Modules
 
 ```
 neurocausal_rag/
@@ -457,6 +457,4 @@ neurocausal_rag/
 
 ---
 
-**Yazar:** Ertugrul Akben | i@ertugrulakben.com
-**Versiyon:** 5.2.0
-**Tarih:** 2025
+**Author:** Ertugrul Akben | i@ertugrulakben.com

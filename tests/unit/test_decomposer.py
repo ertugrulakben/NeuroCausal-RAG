@@ -1,8 +1,7 @@
 """
 NeuroCausal RAG - Query Decomposer Tests
-v5.2 - FAZ 2.3
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest

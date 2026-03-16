@@ -2,7 +2,7 @@
 NeuroCausal RAG - Agentic RAG Module
 LangGraph-based self-correcting agents
 
-v5.0 Features:
+Features:
 - CausalRAGAgent: Main reasoning agent
 - Tools: Search, Graph, LLM, Verify
 - Self-correction loop

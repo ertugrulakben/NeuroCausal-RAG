@@ -1,8 +1,7 @@
 """
 NeuroCausal RAG - Search Optimizer Tests
-v5.2 - FAZ 2.2
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest

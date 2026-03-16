@@ -1,16 +1,16 @@
 """
 NeuroCausal RAG - Entity Linker
-Kod adları ve takma adları gerçek entity'lerle eşleştirir.
+Links code names and aliases to real entities.
 
-Örnek Problem:
+Example Problem:
 - Belge A: "Mavi Ufuk projesi başlatıldı"
 - Belge B: "Güneş Enerjisi A.Ş. satın alındı"
 - Belge C: "Mavi Ufuk = Güneş Enerjisi A.Ş. kod adıdır"
 
-EntityLinker bu üç belgeyi birleştirerek:
-"Mavi Ufuk" = "Güneş Enerjisi A.Ş." alias'ını öğrenir.
+EntityLinker combines these three documents to learn:
+"Mavi Ufuk" = "Gunes Enerjisi A.S." alias.
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import re
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Entity:
-    """Bir entity (varlık) temsili"""
+    """An entity representation"""
     name: str
     entity_type: str  # PERSON, ORG, PROJECT, PRODUCT, LOCATION, etc.
     aliases: Set[str] = field(default_factory=set)
@@ -42,7 +42,7 @@ class Entity:
         return False
 
     def matches(self, text: str) -> bool:
-        """Bu entity verilen metinle eşleşiyor mu?"""
+        """Does this entity match the given text?"""
         text_lower = text.lower()
         if self.name.lower() in text_lower:
             return True
@@ -51,8 +51,8 @@ class Entity:
 
 class AliasStore:
     """
-    Entity alias'larını saklayan ve sorgulayan store.
-    "Mavi Ufuk" → "Güneş Enerjisi A.Ş." gibi eşleştirmeleri tutar.
+    Store that persists and queries entity aliases.
+    Holds mappings like "Mavi Ufuk" -> "Gunes Enerjisi A.S.".
     """
 
     def __init__(self, persist_path: Optional[str] = None):
@@ -65,11 +65,11 @@ class AliasStore:
             self._load()
 
     def add_alias(self, alias: str, canonical_name: str, confidence: float = 0.8):
-        """Yeni alias ekle"""
+        """Add new alias"""
         alias_lower = alias.lower().strip()
         canonical_lower = canonical_name.lower().strip()
 
-        # Kendisiyle eşleştirme yapma
+        # Do not map to itself
         if alias_lower == canonical_lower:
             return
 
@@ -77,23 +77,23 @@ class AliasStore:
         self.reverse_aliases[canonical_lower].add(alias_lower)
         self.confidence_scores[(alias_lower, canonical_lower)] = confidence
 
-        logger.info(f"Alias eklendi: '{alias}' → '{canonical_name}' (güven: {confidence:.2f})")
+        logger.info(f"Alias added: '{alias}' -> '{canonical_name}' (confidence: {confidence:.2f})")
 
     def resolve(self, text: str) -> Optional[str]:
-        """Verilen metni canonical forma çözümle"""
+        """Resolve given text to canonical form"""
         text_lower = text.lower().strip()
         return self.aliases.get(text_lower)
 
     def get_aliases(self, canonical_name: str) -> Set[str]:
-        """Bir canonical name'in tüm alias'larını getir"""
+        """Get all aliases for a canonical name"""
         return self.reverse_aliases.get(canonical_name.lower(), set())
 
     def get_confidence(self, alias: str, canonical: str) -> float:
-        """Alias-canonical eşleşmesinin güven skorunu getir"""
+        """Get confidence score for alias-canonical mapping"""
         return self.confidence_scores.get((alias.lower(), canonical.lower()), 0.0)
 
     def find_in_text(self, text: str) -> List[Tuple[str, str, float]]:
-        """Metinde geçen tüm alias'ları bul ve çözümle"""
+        """Find and resolve all aliases in text"""
         found = []
         text_lower = text.lower()
 
@@ -105,7 +105,7 @@ class AliasStore:
         return found
 
     def save(self, path: Optional[str] = None):
-        """Alias'ları dosyaya kaydet (public method)"""
+        """Save aliases to file (public method)"""
         save_path = path or self.persist_path
         if not save_path:
             return
@@ -118,10 +118,10 @@ class AliasStore:
         with open(save_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-        logger.info(f"Alias store kaydedildi: {len(self.aliases)} alias -> {save_path}")
+        logger.info(f"Alias store saved: {len(self.aliases)} aliases -> {save_path}")
 
     def load(self, path: Optional[str] = None):
-        """Alias'ları dosyadan yükle (public method)"""
+        """Load aliases from file (public method)"""
         load_path = path or self.persist_path
         if not load_path:
             return
@@ -132,19 +132,19 @@ class AliasStore:
 
             self.aliases = data.get('aliases', {})
 
-            # Reverse aliases'ı yeniden oluştur
+            # Rebuild reverse aliases
             for alias, canonical in self.aliases.items():
                 self.reverse_aliases[canonical].add(alias)
 
-            # Confidence scores'u yeniden oluştur
+            # Rebuild confidence scores
             for key, conf in data.get('confidence_scores', {}).items():
                 parts = key.split('|')
                 if len(parts) == 2:
                     self.confidence_scores[(parts[0], parts[1])] = conf
 
-            logger.info(f"Alias store yüklendi: {len(self.aliases)} alias <- {load_path}")
+            logger.info(f"Alias store loaded: {len(self.aliases)} aliases <- {load_path}")
         except Exception as e:
-            logger.warning(f"Alias store yüklenemedi: {e}")
+            logger.warning(f"Failed to load alias store: {e}")
 
     def _save(self):
         """Internal save - backward compat"""
@@ -157,16 +157,16 @@ class AliasStore:
 
 class EntityLinker:
     """
-    Entity Linking ana sınıfı.
+    Main Entity Linking class.
 
-    Görevleri:
-    1. Belgelerden entity'leri çıkar (NER)
-    2. Farklı belgelerdeki entity'leri eşleştir (Coreference)
-    3. Alias'ları öğren ve sakla
-    4. Sorgu zamanında alias'ları çözümle
+    Responsibilities:
+    1. Extract entities from documents (NER)
+    2. Match entities across different documents (Coreference)
+    3. Learn and store aliases
+    4. Resolve aliases at query time
     """
 
-    # Alias tespit kalıpları (Türkçe + İngilizce)
+    # Alias detection patterns (Turkish + English)
     ALIAS_PATTERNS = [
         # "X, Y olarak da bilinir"
         r'["\']?([^"\']+)["\']?\s*(?:olarak da bilinir|olarak bilinen|kod adı|kod adlı|takma adı|lakabı)',
@@ -189,7 +189,7 @@ class EntityLinker:
 
     def extract_aliases_from_text(self, text: str, doc_id: str = None) -> List[Tuple[str, str, float]]:
         """
-        Metinden alias kalıplarını çıkar.
+        Extract alias patterns from text.
 
         Returns:
             List of (alias, canonical_name, confidence) tuples
@@ -203,9 +203,9 @@ class EntityLinker:
                     alias = match[0].strip()
                     canonical = match[1].strip()
 
-                    # Çok kısa veya çok uzun eşleşmeleri filtrele
+                    # Filter too short or too long matches
                     if 2 <= len(alias) <= 100 and 2 <= len(canonical) <= 100:
-                        # Aynı kelime değilse ekle
+                        # Add if not the same word
                         if alias.lower() != canonical.lower():
                             found_aliases.append((alias, canonical, 0.85))
 
@@ -213,13 +213,13 @@ class EntityLinker:
 
     def learn_aliases_from_documents(self, documents: List[Dict]) -> int:
         """
-        Doküman listesinden alias'ları öğren.
+        Learn aliases from document list.
 
         Args:
             documents: [{'id': str, 'content': str, ...}, ...]
 
         Returns:
-            Öğrenilen alias sayısı
+            Number of aliases learned
         """
         learned_count = 0
 
@@ -233,28 +233,28 @@ class EntityLinker:
                 self.alias_store.add_alias(alias, canonical, confidence)
                 learned_count += 1
 
-        logger.info(f"{learned_count} alias öğrenildi (toplam: {len(self.alias_store.aliases)})")
+        logger.info(f"{learned_count} aliases learned (total: {len(self.alias_store.aliases)})")
         return learned_count
 
     def learn_alias(self, alias: str, canonical: str, confidence: float = 0.9):
-        """Manuel olarak alias ekle (kullanıcı feedback'i veya LLM'den)"""
+        """Manually add alias (from user feedback or LLM)"""
         self.alias_store.add_alias(alias, canonical, confidence)
 
     def add_alias(self, alias: str, canonical: str, confidence: float = 0.9):
-        """Manuel olarak alias ekle (learn_alias ile aynı, daha kısa isim)"""
+        """Manually add alias (same as learn_alias, shorter name)"""
         self.alias_store.add_alias(alias, canonical, confidence)
 
     def resolve_text(self, text: str) -> Dict[str, str]:
         """
-        Metindeki alias'ları tespit et ve canonical karşılıklarını döndür.
+        Detect aliases in text and return their canonical forms.
 
         Args:
-            text: İşlenecek metin
+            text: Text to process
 
         Returns:
             {alias: canonical} eşleştirmeleri
 
-        Örnek:
+        Example:
             Input: "Mavi Ufuk projesi başarılı oldu"
             Output: {"Mavi Ufuk": "Güneş Enerjisi A.Ş."}
         """
@@ -268,20 +268,20 @@ class EntityLinker:
 
     def resolve_text_full(self, text: str) -> str:
         """
-        Metindeki tüm alias'ları canonical formlarıyla değiştir.
+        Replace all aliases in text with their canonical forms.
 
-        Örnek:
+        Example:
             Input: "Mavi Ufuk projesi başarılı oldu"
             Output: "Güneş Enerjisi A.Ş. (Mavi Ufuk) projesi başarılı oldu"
         """
         resolved_text = text
         found = self.alias_store.find_in_text(text)
 
-        # Uzundan kısaya sırala (overlapping match'leri önlemek için)
+        # Sort longest first (to prevent overlapping matches)
         found.sort(key=lambda x: len(x[0]), reverse=True)
 
         for alias, canonical, confidence in found:
-            # Büyük/küçük harf uyumlu değiştirme
+            # Case-insensitive replacement
             pattern = re.compile(re.escape(alias), re.IGNORECASE)
             replacement = f"{canonical} ({alias})"
             resolved_text = pattern.sub(replacement, resolved_text, count=1)
@@ -290,7 +290,7 @@ class EntityLinker:
 
     def find_entity_connections(self, doc1: Dict, doc2: Dict) -> List[Tuple[str, str, float]]:
         """
-        İki doküman arasında entity bağlantılarını bul.
+        Find entity connections between two documents.
 
         Returns:
             List of (entity_in_doc1, entity_in_doc2, confidence) tuples
@@ -300,11 +300,11 @@ class EntityLinker:
         content1 = doc1.get('content', '')
         content2 = doc2.get('content', '')
 
-        # Her iki dokümandaki alias'ları bul
+        # Find aliases in both documents
         aliases1 = self.alias_store.find_in_text(content1)
         aliases2 = self.alias_store.find_in_text(content2)
 
-        # Aynı canonical'a işaret eden alias'ları bul
+        # Find aliases pointing to the same canonical
         canonical_to_aliases1 = defaultdict(list)
         canonical_to_aliases2 = defaultdict(list)
 
@@ -314,7 +314,7 @@ class EntityLinker:
         for alias, canonical, conf in aliases2:
             canonical_to_aliases2[canonical].append((alias, conf))
 
-        # Ortak canonical'ları bul
+        # Find common canonicals
         common_canonicals = set(canonical_to_aliases1.keys()) & set(canonical_to_aliases2.keys())
 
         for canonical in common_canonicals:
@@ -327,9 +327,9 @@ class EntityLinker:
 
     def enrich_query(self, query: str) -> str:
         """
-        Sorguyu alias bilgisiyle zenginleştir.
+        Enrich query with alias information.
 
-        Örnek:
+        Example:
             Input: "Mavi Ufuk kaç dolar?"
             Output: "Mavi Ufuk (Güneş Enerjisi A.Ş. satın alması) kaç dolar?"
         """
@@ -337,21 +337,21 @@ class EntityLinker:
         found = self.alias_store.find_in_text(query)
 
         for alias, canonical, confidence in found:
-            if confidence >= 0.7:  # Yüksek güvenli alias'ları ekle
+            if confidence >= 0.7:  # Add high-confidence aliases
                 pattern = re.compile(re.escape(alias), re.IGNORECASE)
                 enriched = pattern.sub(f"{alias} ({canonical})", enriched, count=1)
 
         return enriched
 
     def get_all_aliases(self) -> Dict[str, List[str]]:
-        """Tüm canonical → aliases eşleştirmelerini döndür"""
+        """Return all canonical -> aliases mappings"""
         return {
             canonical: list(aliases)
             for canonical, aliases in self.alias_store.reverse_aliases.items()
         }
 
     def to_dict(self) -> Dict:
-        """Serileştirme için dict'e dönüştür"""
+        """Convert to dict for serialization"""
         return {
             'aliases': self.alias_store.aliases,
             'confidence_scores': {
@@ -362,7 +362,7 @@ class EntityLinker:
 
     @classmethod
     def from_dict(cls, data: Dict) -> 'EntityLinker':
-        """Dict'ten EntityLinker oluştur"""
+        """Create EntityLinker from dict"""
         linker = cls()
 
         for alias, canonical in data.get('aliases', {}).items():
@@ -375,14 +375,14 @@ class EntityLinker:
 
 def find_aliases_with_llm(documents: List[Dict], llm_client) -> List[Tuple[str, str, float]]:
     """
-    LLM kullanarak belgeler arasındaki alias'ları bul.
+    Find aliases between documents using LLM.
 
-    Bu fonksiyon daha yüksek doğruluk için LLM'i kullanır.
+    This function uses LLM for higher accuracy.
     """
     if not documents or not llm_client:
         return []
 
-    # İlk 5 belgenin içeriğini birleştir
+    # Combine content of first 5 documents
     combined_content = "\n---\n".join([
         f"[{doc.get('id', 'unknown')}]: {doc.get('content', '')[:500]}"
         for doc in documents[:5]
@@ -415,5 +415,5 @@ Sadece kesin eşleştirmeleri yaz. Belirsizse yazma."""
 
         return aliases
     except Exception as e:
-        logger.warning(f"LLM alias bulma hatası: {e}")
+        logger.warning(f"LLM alias discovery error: {e}")
         return []

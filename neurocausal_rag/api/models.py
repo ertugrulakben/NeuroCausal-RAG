@@ -2,7 +2,7 @@
 NeuroCausal RAG - API Models
 Pydantic models for request/response validation
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 from typing import List, Dict, Any, Optional

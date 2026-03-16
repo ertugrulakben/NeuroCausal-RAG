@@ -2,54 +2,54 @@
 NeuroCausal RAG - Ornek Veri Setleri Yukleyici
 Markdown dosyalarindan veri setlerini yukler
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import re
 from pathlib import Path
 from typing import List, Dict, Optional
 
-# Proje dizini
+# Project directory
 BASE_DIR = Path(__file__).parent.parent
 EXAMPLES_DIR = BASE_DIR / "examples"
 
 
 # =============================================================================
-# VERI SETI TANIMLARI
+# DATASET DEFINITIONS
 # =============================================================================
 DATASETS = {
     "climate": {
-        "name": "Iklim Degisikligi",
+        "name": "Climate Change",
         "icon": "🌍",
-        "description": "Kuresel isinma, sera gazlari, buzul erimesi vb. 115 dokuman",
+        "description": "Global warming, greenhouse gases, glacier melting etc. 115 documents",
         "source": "climate_knowledge_base",
         "doc_count": 115
     },
     "supply_chain": {
-        "name": "Tedarik Zinciri Krizi",
+        "name": "Supply Chain Crisis",
         "icon": "📦",
-        "description": "Fabrika yangini → Urun gecikmesi. Gizli baglanti senaryosu.",
+        "description": "Factory fire -> Product delay. Hidden connection scenario.",
         "source": "supply_chain_crisis.md",
         "doc_count": 6
     },
     "secret_merger": {
-        "name": "Gizli Satin Alma",
+        "name": "Secret Acquisition",
         "icon": "🔐",
-        "description": "Kod adi ile gercek firma ismi arasindaki baglanti.",
+        "description": "Connection between code name and real company name.",
         "source": "secret_merger.md",
         "doc_count": 6
     },
     "legal_impact": {
-        "name": "Hukuki Domino Etkisi",
+        "name": "Legal Domino Effect",
         "icon": "⚖️",
-        "description": "Yasa degisikligi → Pazarlama cokusu. Sebep-sonuc zinciri.",
+        "description": "Law change -> Marketing collapse. Cause-effect chain.",
         "source": "legal_impact.md",
         "doc_count": 6
     },
     "stress_chain": {
-        "name": "Stres Zinciri",
+        "name": "Stress Chain",
         "icon": "😰",
-        "description": "Stres → Kortizol → Uyku → Dikkat → Kaza zinciri.",
+        "description": "Stress -> Cortisol -> Sleep -> Attention -> Accident chain.",
         "source": "stress_chain.md",
         "doc_count": 4
     }
@@ -58,7 +58,7 @@ DATASETS = {
 
 def parse_markdown_documents(content: str, source_name: str = "unknown") -> List[Dict]:
     """
-    Markdown icerigini dokumanlara ayirir.
+    Split Markdown content into documents.
 
     Format:
     ### doc_id
@@ -69,14 +69,14 @@ def parse_markdown_documents(content: str, source_name: str = "unknown") -> List
     """
     docs = []
 
-    # ### ile baslayan bloklari bul
+    # Find blocks starting with ###
     pattern = r'###\s+(\w+)\s*\n(.*?)(?=###|\Z)'
     matches = re.findall(pattern, content, re.DOTALL)
 
     for doc_id, doc_content in matches:
         doc_content = doc_content.strip()
         if doc_content and not doc_content.startswith('---'):
-            # --- ile biten kismi temizle
+            # Clean trailing ---
             doc_content = re.sub(r'\n---\s*$', '', doc_content).strip()
 
             if doc_content:
@@ -91,11 +91,11 @@ def parse_markdown_documents(content: str, source_name: str = "unknown") -> List
 
 
 def load_markdown_dataset(filename: str) -> List[Dict]:
-    """Markdown dosyasindan veri seti yukle."""
+    """Load dataset from Markdown file."""
     filepath = EXAMPLES_DIR / filename
 
     if not filepath.exists():
-        raise FileNotFoundError(f"Dosya bulunamadi: {filepath}")
+        raise FileNotFoundError(f"File not found: {filepath}")
 
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -105,7 +105,7 @@ def load_markdown_dataset(filename: str) -> List[Dict]:
 
 
 def load_climate_dataset() -> List[Dict]:
-    """Iklim veri setini yukle."""
+    """Load climate dataset."""
     try:
         from data.climate_knowledge_base import get_documents
         docs = get_documents()
@@ -118,7 +118,7 @@ def load_climate_dataset() -> List[Dict]:
 
 def load_dataset(dataset_key: str) -> List[Dict]:
     """
-    Belirtilen veri setini yukle.
+    Load specified dataset.
 
     Args:
         dataset_key: climate, supply_chain, secret_merger, legal_impact, stress_chain
@@ -127,7 +127,7 @@ def load_dataset(dataset_key: str) -> List[Dict]:
         Dokuman listesi
     """
     if dataset_key not in DATASETS:
-        raise ValueError(f"Gecersiz veri seti: {dataset_key}")
+        raise ValueError(f"Invalid dataset: {dataset_key}")
 
     dataset_info = DATASETS[dataset_key]
     source = dataset_info['source']
@@ -141,15 +141,15 @@ def load_dataset(dataset_key: str) -> List[Dict]:
 
 
 def get_dataset_raw_content(dataset_key: str) -> str:
-    """Veri setinin ham icerigini dondur (gosterim icin)."""
+    """Return raw content of dataset (for display)."""
     if dataset_key not in DATASETS:
-        return "Gecersiz veri seti"
+        return "Invalid dataset"
 
     dataset_info = DATASETS[dataset_key]
     source = dataset_info['source']
 
     if dataset_key == 'climate':
-        # Iklim verileri icin ozet
+        # Summary for climate data
         docs = load_climate_dataset()
         lines = [f"# Iklim Degisikligi Veri Seti ({len(docs)} dokuman)\n"]
         for doc in docs[:10]:  # Ilk 10
@@ -164,14 +164,14 @@ def get_dataset_raw_content(dataset_key: str) -> str:
             with open(filepath, 'r', encoding='utf-8') as f:
                 return f.read()
 
-    return "Icerik bulunamadi"
+    return "Content not found"
 
 
 def get_available_datasets() -> Dict:
-    """Mevcut veri setlerini dondur."""
+    """Return available datasets."""
     return DATASETS
 
 
 def get_dataset_info(dataset_key: str) -> Dict:
-    """Veri seti bilgilerini dondur."""
+    """Return dataset info."""
     return DATASETS.get(dataset_key, {})

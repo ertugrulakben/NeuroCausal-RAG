@@ -1,8 +1,7 @@
 """
 NeuroCausal RAG - Memory Store Tests
-v5.2
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest

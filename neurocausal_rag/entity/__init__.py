@@ -2,7 +2,7 @@
 NeuroCausal RAG - Entity Linking Module
 Kod adları, takma adlar ve referansları çözer.
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 from .linker import EntityLinker, Entity, AliasStore

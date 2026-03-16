@@ -2,7 +2,7 @@
 NeuroCausal RAG - REST API Module
 FastAPI-based production API
 
-v5.0 Features:
+Features:
 - RESTful endpoints for all operations
 - API key authentication
 - Rate limiting

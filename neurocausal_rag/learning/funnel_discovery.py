@@ -1,25 +1,25 @@
 """
 NeuroCausal RAG - Funnel Discovery Engine
-O(N²) → O(50) optimizasyonu için üç aşamalı filtreleme
+O(N^2) -> O(50) optimization with three-stage filtering
 
-Strateji:
+Strategy:
     Stage 1: Semantic Pre-filter (Fast, O(N*K))
-        - Embedding similarity ile aday çiftleri belirle
-        - Top-K en benzer çiftler seçilir
+        - Determine candidate pairs via embedding similarity
+        - Top-K most similar pairs are selected
 
     Stage 2: NLI Verification (Medium, O(K))
-        - Sadece Stage 1'den geçen çiftler için NLI
-        - Async batch processing ile hızlandırma
+        - NLI only for pairs passing Stage 1
+        - Speedup with async batch processing
 
     Stage 3: LLM Confirmation (Optional, O(M))
-        - Yüksek güvenlikli uygulamalar için
-        - Sadece çok önemli ilişkiler için LLM doğrulaması
+        - For high-security applications
+        - LLM verification only for critical relations
 
-Karmaşıklık:
+Complexity:
     - Naive: O(N²) where N=1000 → 1,000,000 comparisons
     - Funnel: O(N*50) + O(50) → ~50,000 comparisons (20x faster)
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 import asyncio
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class CandidatePair:
-    """Aday nedensel çift"""
+    """Candidate causal pair"""
     source_id: str
     target_id: str
     source_text: str
@@ -53,9 +53,9 @@ class CandidatePair:
 
 class FunnelDiscovery:
     """
-    Üç aşamalı funnel ile verimli nedensellik keşfi.
+    Efficient causal discovery with three-stage funnel.
 
-    O(N²) → O(50) optimizasyonu sağlar:
+    Provides O(N^2) -> O(50) optimization:
     - Stage 1: N×K semantic filter (K=50 default)
     - Stage 2: K×K NLI verification
     - Stage 3: Top-M LLM confirmation (optional)
@@ -77,13 +77,13 @@ class FunnelDiscovery:
     ):
         """
         Args:
-            top_k_semantic: Stage 1'de her doküman için kaç aday (default: 50)
-            top_k_nli: Stage 2'den kaç aday geçer (default: 20)
+            top_k_semantic: Candidates per document in Stage 1 (default: 50)
+            top_k_nli: Candidates passing Stage 2 (default: 20)
             semantic_threshold: Minimum semantic similarity
             nli_threshold: Minimum NLI entailment score
-            use_async: Async processing kullan
-            max_workers: Thread pool worker sayısı
-            nli_model_name: NLI model ismi
+            use_async: Use async processing
+            max_workers: Thread pool worker count
+            nli_model_name: NLI model name
         """
         self.top_k_semantic = top_k_semantic
         self.top_k_nli = top_k_nli
@@ -121,29 +121,29 @@ class FunnelDiscovery:
         llm_callback: Optional[Callable] = None
     ) -> List[Dict]:
         """
-        Ana keşif fonksiyonu.
+        Main discovery function.
 
         Args:
             documents: [{'id': str, 'content': str, 'category': str}, ...]
-            embeddings: (n_docs, dim) embedding matrisi
-            enable_stage3: LLM doğrulaması aktif mi?
-            llm_callback: LLM çağrı fonksiyonu (optional)
+            embeddings: (n_docs, dim) embedding matrix
+            enable_stage3: Is LLM verification active?
+            llm_callback: LLM callback function (optional)
 
         Returns:
-            Keşfedilen nedensel ilişkiler
+            Discovered causal relations
         """
         n = len(documents)
         if n < 2:
             return []
 
-        logger.info(f"FunnelDiscovery: {n} doküman, funnel başlıyor...")
+        logger.info(f"FunnelDiscovery: {n} documents, starting funnel...")
 
         # ============================================================
         # STAGE 1: Semantic Pre-filter (Fast)
         # ============================================================
         logger.info("  Stage 1: Semantic pre-filtering...")
         candidates = self._stage1_semantic_filter(documents, embeddings)
-        logger.info(f"    → {len(candidates)} aday çift bulundu")
+        logger.info(f"    -> {len(candidates)} candidate pairs found")
 
         if not candidates:
             return []
@@ -156,7 +156,7 @@ class FunnelDiscovery:
             verified = self._stage2_nli_async(candidates)
         else:
             verified = self._stage2_nli_sync(candidates)
-        logger.info(f"    → {len(verified)} çift doğrulandı")
+        logger.info(f"    -> {len(verified)} pairs verified")
 
         if not verified:
             return []
@@ -167,13 +167,13 @@ class FunnelDiscovery:
         if enable_stage3 and llm_callback:
             logger.info("  Stage 3: LLM confirmation...")
             final = self._stage3_llm_confirm(verified, llm_callback)
-            logger.info(f"    → {len(final)} çift onaylandı")
+            logger.info(f"    -> {len(final)} pairs confirmed")
         else:
             final = verified
 
         # Format output
         relations = self._format_results(final)
-        logger.info(f"FunnelDiscovery: Toplam {len(relations)} ilişki keşfedildi")
+        logger.info(f"FunnelDiscovery: Total {len(relations)} relations discovered")
 
         return relations
 
@@ -183,10 +183,10 @@ class FunnelDiscovery:
         embeddings: np.ndarray
     ) -> List[CandidatePair]:
         """
-        Stage 1: Hızlı semantic filtering.
+        Stage 1: Fast semantic filtering.
 
-        Her doküman için en benzer K dokümanı bul.
-        O(N * K * log(K)) karmaşıklık.
+        Find the K most similar documents for each document.
+        O(N * K * log(K)) complexity.
         """
         n = len(documents)
         candidates = []
@@ -201,10 +201,10 @@ class FunnelDiscovery:
         sim_matrix = np.dot(normalized, normalized.T)
 
         for i in range(n):
-            # i'nin en benzer K dokümanlari
+            # Top-K most similar documents for i
             similarities = sim_matrix[i]
 
-            # Kendisi hariç, threshold üstü, top-K
+            # Exclude self, above threshold, top-K
             indices = np.argsort(similarities)[::-1]  # Descending
 
             count = 0
@@ -221,8 +221,8 @@ class FunnelDiscovery:
                     continue
                 seen_pairs.add(pair_key)
 
-                # Yön belirle: Daha genel olan kaynak
-                # Basit heuristik: Daha kısa metin genellikle daha genel
+                # Determine direction: More general one is the source
+                # Simple heuristic: Shorter text is usually more general
                 len_i = len(documents[i]['content'])
                 len_j = len(documents[j]['content'])
 
@@ -249,7 +249,7 @@ class FunnelDiscovery:
         self,
         candidates: List[CandidatePair]
     ) -> List[CandidatePair]:
-        """Stage 2: Senkron NLI verification"""
+        """Stage 2: Synchronous NLI verification"""
         model = self._get_nli_model()
 
         if model is None:
@@ -389,7 +389,7 @@ class FunnelDiscovery:
         llm_callback: Callable
     ) -> List[CandidatePair]:
         """
-        Stage 3: LLM ile final onay.
+        Stage 3: Final confirmation via LLM.
 
         llm_callback signature:
             def callback(source_text: str, target_text: str) -> Tuple[bool, float, str]
@@ -445,9 +445,9 @@ class FunnelDiscovery:
 
 class AsyncFunnelDiscovery(FunnelDiscovery):
     """
-    Tam async versiyon - asyncio event loop ile çalışır.
+    Full async version - works with asyncio event loop.
 
-    Kullanım:
+    Usage:
         >>> async_funnel = AsyncFunnelDiscovery()
         >>> relations = await async_funnel.discover_async(documents, embeddings)
     """
@@ -599,19 +599,19 @@ def funnel_causal_discovery(
     use_async: bool = True
 ) -> List[Dict]:
     """
-    Funnel discovery - tek fonksiyon API.
+    Funnel discovery - single function API.
 
-    O(N²) → O(50) optimizasyonu sağlar.
+    Provides O(N^2) -> O(50) optimization.
 
     Args:
         documents: [{'id': str, 'content': str}, ...]
-        embeddings: (n_docs, dim) embedding matrisi
+        embeddings: (n_docs, dim) embedding matrix
         top_k_semantic: Stage 1 limit
         top_k_nli: Stage 2 limit
         use_async: Async processing
 
     Returns:
-        Keşfedilen nedensel ilişkiler
+        Discovered causal relations
 
     Example:
         >>> relations = funnel_causal_discovery(docs, embeddings)

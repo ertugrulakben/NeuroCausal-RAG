@@ -2,7 +2,7 @@
 NeuroCausal RAG - Retriever Engine
 Combines similarity, causal, and importance scores
 
-v5.1: Entity Linking entegrasyonu eklendi
+Includes Entity Linking integration
 """
 
 import numpy as np
@@ -29,8 +29,8 @@ class Retriever(IRetriever):
 
     Final score = alpha * similarity + beta * causal + gamma * importance
 
-    v5.1: Entity Linking desteği eklendi
-    - Sorgu zenginleştirme (alias → canonical)
+    Entity Linking support:
+    - Query enrichment (alias -> canonical)
     - Entity-based document boosting
     """
 

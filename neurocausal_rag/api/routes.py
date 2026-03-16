@@ -11,7 +11,7 @@ Endpoints:
 - /graph - Graph operations
 - /health - Health check
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 from typing import List, Optional

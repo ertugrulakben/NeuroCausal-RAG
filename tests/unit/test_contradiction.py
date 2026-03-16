@@ -1,8 +1,7 @@
 """
 NeuroCausal RAG - Contradiction Detection Unit Tests
-v5.1 - FAZ 1.4
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest

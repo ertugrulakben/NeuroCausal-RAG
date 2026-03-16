@@ -16,7 +16,7 @@ Architecture:
     │                   (if confidence < 0.7)                     │
     └─────────────────────────────────────────────────────────────┘
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 from typing import Dict, List, Any, Optional, TypedDict, Annotated

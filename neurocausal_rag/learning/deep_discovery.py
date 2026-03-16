@@ -1,15 +1,15 @@
 """
 NeuroCausal RAG - Deep Causal Discovery
-NLI (Natural Language Inference) tabanlı derin nedensellik keşfi
+NLI (Natural Language Inference) based deep causal discovery
 
-Bu modül, basit regex kalıpları yerine transformer modelleri kullanarak
-anlamsal nedensellik ilişkilerini keşfeder.
+This module uses transformer models instead of simple regex patterns
+to discover semantic causal relationships.
 
-Temel fikir:
-- "Sera gazları atmosferde birikir" → "Dünya ısınır"
-- İki cümle arasında ENTAILMENT (çıkarım) varsa, nedensellik olabilir
+Core idea:
+- "Greenhouse gases accumulate in atmosphere" -> "Earth warms"
+- If ENTAILMENT exists between two sentences, causality may exist
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 import numpy as np
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class CausalPair:
-    """Nedensel çift"""
+    """Causal pair"""
     source_id: str
     target_id: str
     source_text: str
@@ -34,17 +34,17 @@ class CausalPair:
 
 class DeepCausalDiscovery:
     """
-    NLI (Natural Language Inference) tabanlı derin nedensellik keşfi.
+    NLI (Natural Language Inference) based deep causal discovery.
 
-    Çalışma prensibi:
-    1. Her doküman çifti için "X neden olur Y" hipotezini test et
-    2. NLI modeli ile entailment skoru hesapla
-    3. Yüksek entailment = potansiyel nedensellik
+    How it works:
+    1. Test the "X causes Y" hypothesis for each document pair
+    2. Compute entailment score using NLI model
+    3. High entailment = potential causality
 
-    NOT: Bu yöntem, regex kalıplarına göre çok daha güçlüdür çünkü:
-    - Anlamsal benzerliği değil, mantıksal çıkarımı kullanır
-    - "Sera gazı" ve "ısınma" arasında kelime eşleşmesi olmasa bile
-      mantıksal bağlantıyı yakalayabilir
+    NOTE: This method is much more powerful than regex because:
+    - It uses logical inference, not semantic similarity
+    - It can capture logical connections even without word overlap
+      between "greenhouse gas" and "warming"
     """
 
     def __init__(
@@ -55,9 +55,9 @@ class DeepCausalDiscovery:
     ):
         """
         Args:
-            model_name: NLI model ismi (HuggingFace)
-            device: "cpu" veya "cuda"
-            threshold: Entailment eşiği
+            model_name: NLI model name (HuggingFace)
+            device: "cpu" or "cuda"
+            threshold: Entailment threshold
         """
         self.model_name = model_name
         self.device = device
@@ -66,19 +66,19 @@ class DeepCausalDiscovery:
         self._use_simple = False
 
     def _load_model(self):
-        """Model'i lazy load et"""
+        """Lazy load the model"""
         if self._model is not None:
             return
 
         try:
             from sentence_transformers import CrossEncoder
             self._model = CrossEncoder(self.model_name, device=self.device)
-            logger.info(f"DeepCausalDiscovery: {self.model_name} yüklendi")
+            logger.info(f"DeepCausalDiscovery: {self.model_name} loaded")
         except ImportError:
-            logger.warning("sentence-transformers yüklü değil, basit mod kullanılacak")
+            logger.warning("sentence-transformers not installed, using simple mode")
             self._use_simple = True
         except Exception as e:
-            logger.warning(f"Model yüklenemedi: {e}, basit mod kullanılacak")
+            logger.warning(f"Model load failed: {e}, using simple mode")
             self._use_simple = True
 
     def discover(
@@ -87,14 +87,14 @@ class DeepCausalDiscovery:
         max_pairs: int = 500
     ) -> List[Dict]:
         """
-        Dokümanlar arasında nedensel ilişkileri keşfet.
+        Discover causal relationships between documents.
 
         Args:
             documents: [{'id': str, 'content': str}, ...]
-            max_pairs: Maksimum çift sayısı (performans için)
+            max_pairs: Maximum number of pairs (for performance)
 
         Returns:
-            Keşfedilen nedensel ilişkiler
+            Discovered causal relations
         """
         self._load_model()
 
@@ -104,34 +104,34 @@ class DeepCausalDiscovery:
         n = len(documents)
         pairs = []
 
-        # Tüm çiftleri oluştur (sınırlı)
+        # Generate all pairs (limited)
         all_pairs = []
         for i in range(n):
             for j in range(n):
                 if i != j:
                     all_pairs.append((i, j))
 
-        # Rastgele örnekle
+        # Random sampling
         if len(all_pairs) > max_pairs:
             import random
             random.shuffle(all_pairs)
             all_pairs = all_pairs[:max_pairs]
 
-        logger.info(f"DeepCausalDiscovery: {len(all_pairs)} çift analiz ediliyor...")
+        logger.info(f"DeepCausalDiscovery: analyzing {len(all_pairs)} pairs...")
 
-        # Batch işleme için hazırla
+        # Prepare for batch processing
         batch_size = 32
         results = []
 
         for batch_start in range(0, len(all_pairs), batch_size):
             batch = all_pairs[batch_start:batch_start + batch_size]
 
-            # NLI formatında çiftler
+            # NLI format pairs
             nli_pairs = []
             for i, j in batch:
-                # Premise: source content (özet)
+                # Premise: source content (summary)
                 premise = documents[i]['content'][:200]
-                # Hypothesis: "Bu nedenle {target} oluşur"
+                # Hypothesis: "Therefore {target} occurs"
                 target_text = documents[j]['content'][:100]
                 hypothesis = f"Bu nedenle {target_text}"
                 nli_pairs.append((premise, hypothesis))
@@ -157,21 +157,21 @@ class DeepCausalDiscovery:
                             'evidence': f"NLI Entailment: {entailment:.3f}"
                         })
             except Exception as e:
-                logger.error(f"NLI batch hata: {e}")
+                logger.error(f"NLI batch error: {e}")
                 continue
 
-        logger.info(f"DeepCausalDiscovery: {len(results)} ilişki bulundu")
+        logger.info(f"DeepCausalDiscovery: {len(results)} relations found")
         return sorted(results, key=lambda x: x['confidence'], reverse=True)
 
     def _simple_discovery(self, documents: List[Dict]) -> List[Dict]:
         """
-        Basit keşif modu (model yoksa).
-        Embedding similarity + keyword matching kullanır.
+        Simple discovery mode (when model is unavailable).
+        Uses embedding similarity + keyword matching.
         """
         results = []
         n = len(documents)
 
-        # Nedensellik anahtar kelimeleri
+        # Causality keywords
         cause_words = {'neden', 'sebep', 'kaynak', 'etken', 'tetikler',
                        'cause', 'source', 'trigger', 'leads'}
         effect_words = {'sonuç', 'etki', 'netice', 'oluşur', 'meydana',
@@ -185,12 +185,12 @@ class DeepCausalDiscovery:
                 text_i = documents[i]['content'].lower()
                 text_j = documents[j]['content'].lower()
 
-                # i neden içeriyorsa ve j sonuç içeriyorsa
+                # if i contains cause words and j contains effect words
                 has_cause = any(w in text_i for w in cause_words)
                 has_effect = any(w in text_j for w in effect_words)
 
                 if has_cause and has_effect:
-                    # Basit skor
+                    # Simple score
                     score = 0.6 + 0.1 * (sum(1 for w in cause_words if w in text_i) +
                                          sum(1 for w in effect_words if w in text_j))
                     score = min(0.9, score)
@@ -209,9 +209,9 @@ class DeepCausalDiscovery:
 
 class CausalStrengthEstimator:
     """
-    Embedding tabanlı nedensel güç tahmini.
+    Embedding-based causal strength estimation.
 
-    İki doküman arasındaki nedensel ilişki gücünü tahmin eder.
+    Estimates the causal relationship strength between two documents.
     """
 
     def __init__(self, embedding_dim: int = 384):
@@ -224,24 +224,24 @@ class CausalStrengthEstimator:
         target_emb: np.ndarray
     ) -> float:
         """
-        İki embedding arasındaki nedensel güç tahmini.
+        Causal strength estimation between two embeddings.
 
-        Yöntem:
-        1. Cosine similarity (temel benzerlik)
-        2. Asymmetry score (yön bilgisi)
-        3. Projection score (nedensel uzay projeksiyonu)
+        Method:
+        1. Cosine similarity (base similarity)
+        2. Asymmetry score (direction info)
+        3. Projection score (causal space projection)
         """
         # 1. Cosine similarity
         cos_sim = np.dot(source_emb, target_emb) / (
             np.linalg.norm(source_emb) * np.linalg.norm(target_emb) + 1e-8
         )
 
-        # 2. Asymmetry: source → target güçlüyse, nedensellik olabilir
-        # Vektör farkının yönü
+        # 2. Asymmetry: if source -> target is strong, causality may exist
+        # Direction of the vector difference
         diff = target_emb - source_emb
         diff_norm = np.linalg.norm(diff)
 
-        # Source'un diff yönündeki projeksiyonu
+        # Projection of source in the diff direction
         if diff_norm > 0:
             projection = np.dot(source_emb, diff) / diff_norm
             asymmetry = max(0, projection / (np.linalg.norm(source_emb) + 1e-8))
@@ -260,16 +260,16 @@ def deep_causal_discovery(
     max_pairs: int = 500
 ) -> List[Dict]:
     """
-    Derin nedensellik keşfi - tek fonksiyon API.
+    Deep causal discovery - single function API.
 
     Args:
         documents: [{'id': str, 'content': str}, ...]
-        embeddings: Opsiyonel embedding matrisi
-        use_nli: NLI modeli kullanılsın mı?
-        max_pairs: Maksimum çift sayısı
+        embeddings: Optional embedding matrix
+        use_nli: Use NLI model?
+        max_pairs: Maximum number of pairs
 
     Returns:
-        Keşfedilen nedensel ilişkiler
+        Discovered causal relations
     """
     all_relations = []
 
@@ -280,14 +280,14 @@ def deep_causal_discovery(
             nli_relations = nli_discovery.discover(documents, max_pairs)
             all_relations.extend(nli_relations)
         except Exception as e:
-            logger.warning(f"NLI discovery atlandı: {e}")
+            logger.warning(f"NLI discovery skipped: {e}")
 
     # 2. Embedding-based strength estimation (varsa)
     if embeddings is not None:
         estimator = CausalStrengthEstimator()
         n = len(documents)
 
-        for i in range(min(n, 50)):  # İlk 50 doküman için
+        for i in range(min(n, 50)):  # For the first 50 documents
             for j in range(min(n, 50)):
                 if i == j:
                     continue

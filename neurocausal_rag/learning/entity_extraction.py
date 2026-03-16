@@ -1,19 +1,19 @@
 """
 NeuroCausal RAG - Entity Extraction Engine
-NER-based entity extraction ve entity-relation mapping
+NER-based entity extraction and entity-relation mapping
 
-Bu modül:
+This module:
 1. SpaCy veya regex ile entity extraction
 2. Entity normalization (alias → canonical)
 3. Entity-to-document mapping
 4. Entity relationship discovery
 
-Kullanım:
+Usage:
     >>> extractor = EntityExtractor()
     >>> entities = extractor.extract(documents)
     >>> relations = extractor.discover_entity_relations(entities)
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 import re
@@ -71,8 +71,8 @@ class EntityExtractor:
     ):
         """
         Args:
-            use_spacy: SpaCy kullan (varsa)
-            spacy_model: SpaCy model ismi
+            use_spacy: Use SpaCy (if available)
+            spacy_model: SpaCy model name
             domain: Domain-specific patterns (climate, medical, etc.)
         """
         self.use_spacy = use_spacy

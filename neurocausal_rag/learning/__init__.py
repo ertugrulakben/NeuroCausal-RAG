@@ -2,7 +2,7 @@
 NeuroCausal RAG - Learning Module
 Auto-discovery, feedback, and continuous learning
 
-v5.0 Features:
+Features:
 - FunnelDiscovery: O(N²) → O(50) optimization
 - AsyncFunnelDiscovery: Async NLI processing
 - EntityExtractor: NER-based entity extraction
@@ -36,19 +36,19 @@ __all__ = [
     # Deep/NLI
     "DeepCausalDiscovery",
     "deep_causal_discovery",
-    # Funnel (v5.0)
+    # Funnel
     "FunnelDiscovery",
     "AsyncFunnelDiscovery",
     "funnel_causal_discovery",
-    # Entity (v5.0)
+    # Entity
     "EntityExtractor",
     "EntityRelationDiscovery",
     "extract_entities_and_relations",
-    # Pipeline (v5.0)
+    # Pipeline
     "DiscoveryPipeline",
     "PipelineMode",
     "run_discovery_pipeline",
-    # Feedback (v5.0)
+    # Feedback
     "FeedbackLoop",
     "FeedbackStore",
     "FeedbackRecord",

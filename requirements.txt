@@ -1,12 +1,11 @@
-# NeuroCausal RAG - Gereksinimler
+# NeuroCausal RAG - Requirements
 #
-# Yazar: Ertugrul Akben
-# E-posta: d@ertugrulakben.com
+# Author: Ertugrul Akben
+# Email: i@ertugrulakben.com
 # Website: https://ertugrulakben.com/
-# Versiyon: 2.0.0
 
 # =============================================================================
-# TEMEL BAGIMLILIKLAR
+# CORE DEPENDENCIES
 # =============================================================================
 networkx>=3.0
 numpy>=1.24
@@ -18,7 +17,7 @@ scipy>=1.10
 sentence-transformers>=2.2
 
 # =============================================================================
-# GORSELLESTIRME
+# VISUALIZATION
 # =============================================================================
 matplotlib>=3.7
 pyvis>=0.3.2
@@ -30,14 +29,14 @@ pytest>=7.0
 pytest-cov>=4.0
 
 # =============================================================================
-# KONFIGURASYON
+# CONFIGURATION
 # =============================================================================
 pyyaml>=6.0
 
 # =============================================================================
-# GNN - PYTORCH GEOMETRIC (Opsiyonel ama Onerilen)
+# GNN - PYTORCH GEOMETRIC (Optional but Recommended)
 # =============================================================================
-# PyTorch ve PyTorch Geometric icin asagidaki komutlari kullanin:
+# For PyTorch and PyTorch Geometric use the following commands:
 #
 # Windows/Linux/Mac (CPU):
 #   pip install torch
@@ -47,7 +46,7 @@ pyyaml>=6.0
 #   pip install torch --index-url https://download.pytorch.org/whl/cu118
 #   pip install torch-geometric
 #
-# Daha fazla bilgi: https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html
+# More info: https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html
 
 torch>=2.0
 torch-geometric>=2.3
@@ -58,19 +57,19 @@ torch-geometric>=2.3
 streamlit>=1.28
 
 # =============================================================================
-# LLM VE API
+# LLM AND API
 # =============================================================================
 openai>=1.0
 python-dotenv>=1.0
 pydantic>=2.0
 
 # =============================================================================
-# VERI ANALIZI
+# DATA ANALYSIS
 # =============================================================================
 pandas>=2.0
 
 # =============================================================================
-# AGENTIC RAG (v5.0)
+# AGENTIC RAG
 # =============================================================================
 # LangGraph for agent workflows (optional but recommended)
 langgraph>=0.0.20
@@ -78,7 +77,7 @@ langchain>=0.1.0
 langchain-core>=0.1.0
 
 # =============================================================================
-# ENTERPRISE BACKENDS (v5.0)
+# ENTERPRISE BACKENDS
 # =============================================================================
 # Neo4j graph database
 neo4j>=5.0
@@ -93,7 +92,7 @@ spacy>=3.5
 # (already included via sentence-transformers)
 
 # =============================================================================
-# REST API (v5.0)
+# REST API
 # =============================================================================
 # FastAPI web framework
 fastapi>=0.100.0

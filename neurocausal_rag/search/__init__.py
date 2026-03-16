@@ -2,7 +2,7 @@
 NeuroCausal RAG - Search Module
 Index backends and retrieval engine
 
-v5.2: Multi-Hop + Optimizer + Query Decomposition
+Includes Multi-Hop, Optimizer, and Query Decomposition
 """
 
 from .index import BruteForceIndex, create_index_backend

@@ -2,7 +2,7 @@
 NeuroCausal RAG - Canli Demo / Playground
 Kullanicilarin kendi verileriyle sistemi test etmesi icin interaktif sayfa
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import streamlit as st
@@ -54,10 +54,10 @@ st.markdown("""
 
 
 # =============================================================================
-# ORNEK VERILER - Dosyalardan yukle
+# EXAMPLE DATA - Load from files
 # =============================================================================
 def load_example_datasets():
-    """Ornek veri setlerini yukle."""
+    """Load example datasets."""
     try:
         from data.example_datasets import DATASETS, get_dataset_raw_content
         return DATASETS, get_dataset_raw_content
@@ -66,7 +66,7 @@ def load_example_datasets():
 
 EXAMPLE_DATASETS, get_raw_content = load_example_datasets()
 
-# Playground icin ozel ornekler (kisa veriler)
+# Special examples for playground (short data)
 PLAYGROUND_EXAMPLES = {
     "Bos": "",
     "😰 Stres Zinciri": """### stres_kortizol
@@ -137,7 +137,7 @@ Avrupa satislari dustu: Almanya -%35, Fransa -%28, Ispanya -%42. Sebep: Hedefli 
 # =============================================================================
 def parse_documents(text: str) -> list:
     """
-    Metni dokumanlara ayirir. Desteklenen formatlar:
+    Split text into documents. Supported formats:
     1. Markdown: ### id\nicerik
     2. JSON: [{"id": "...", "content": "..."}]
     3. Paragraf: \n\n ile ayrilmis paragraflar
@@ -151,7 +151,7 @@ def parse_documents(text: str) -> list:
     if not text:
         return docs
 
-    # 1. JSON formati dene
+    # 1. Try JSON format
     if text.startswith('[') or text.startswith('{'):
         try:
             data = json.loads(text)
@@ -167,16 +167,16 @@ def parse_documents(text: str) -> list:
             if docs:
                 return docs
         except json.JSONDecodeError:
-            pass  # JSON degil, diger formatlari dene
+            pass  # Not JSON, try other formats
 
-    # 2. Markdown ### formati - daha esnek regex
+    # 2. Markdown ### format - more flexible regex
     pattern = r'###\s*([^\n]+)\s*\n(.*?)(?=\n###|\Z)'
     matches = re.findall(pattern, text, re.DOTALL)
 
     for doc_id, content in matches:
         content = content.strip()
-        if content and len(content) > 5:  # En az 5 karakter
-            # ID'yi temizle
+        if content and len(content) > 5:  # At least 5 characters
+            # Clean the ID
             clean_id = re.sub(r'[^\w\-_]', '_', doc_id.strip())[:50]
             docs.append({
                 'id': clean_id or f'doc_{len(docs)+1}',
@@ -186,7 +186,7 @@ def parse_documents(text: str) -> list:
     if docs:
         return docs
 
-    # 3. ## veya # baslikli format
+    # 3. ## or # heading format
     pattern2 = r'^#{1,2}\s*([^\n]+)\s*\n(.*?)(?=\n#{1,2}\s|\Z)'
     matches2 = re.findall(pattern2, text, re.DOTALL | re.MULTILINE)
 
@@ -202,7 +202,7 @@ def parse_documents(text: str) -> list:
     if docs:
         return docs
 
-    # 4. Paragraf bazli (cift satir boslugu)
+    # 4. Paragraph-based (double newline)
     paragraphs = [p.strip() for p in text.split('\n\n') if p.strip() and len(p.strip()) > 20]
     if len(paragraphs) >= 2:
         for i, para in enumerate(paragraphs):
@@ -212,7 +212,7 @@ def parse_documents(text: str) -> list:
             })
         return docs
 
-    # 5. Satir bazli (tek satir boslugu, en az 30 karakter)
+    # 5. Line-based (single newline, at least 30 chars)
     lines = [line.strip() for line in text.split('\n') if line.strip() and len(line.strip()) > 30]
     if len(lines) >= 2:
         for i, line in enumerate(lines):
@@ -222,9 +222,9 @@ def parse_documents(text: str) -> list:
             })
         return docs
 
-    # 6. Son care: Tum metni tek dokuman olarak al (en az 50 karakter)
+    # 6. Last resort: Take all text as single document (at least 50 chars)
     if len(text) > 50:
-        # Metni yaklasik esit parcalara bol
+        # Split text into roughly equal parts
         chunk_size = max(100, len(text) // 3)
         chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
         for i, chunk in enumerate(chunks):
@@ -239,7 +239,7 @@ def parse_documents(text: str) -> list:
 
 def create_sandbox_rag(docs: list, progress_callback=None):
     """
-    Gecici (in-memory) RAG motoru olusturur.
+    Creates a temporary (in-memory) RAG engine.
     """
     from neurocausal_rag.embedding.text import TextEmbedding
     from neurocausal_rag.core.graph import GraphEngine
@@ -257,7 +257,7 @@ def create_sandbox_rag(docs: list, progress_callback=None):
     emb_config = EmbeddingConfig()
     embedding = TextEmbedding(emb_config)
 
-    # Step 2: Graf olustur ve dokumanlari ekle
+    # Step 2: Create graph and add documents
     if progress_callback:
         progress_callback(2/total_steps, "Dokumanlar isleniyor...")
 
@@ -272,7 +272,7 @@ def create_sandbox_rag(docs: list, progress_callback=None):
 
     embeddings_array = np.array(embeddings_list)
 
-    # Step 3: Nedensellik kesfi
+    # Step 3: Causal discovery
     if progress_callback:
         progress_callback(3/total_steps, "Nedensellik iliskileri kesfediliyor...")
 
@@ -282,7 +282,7 @@ def create_sandbox_rag(docs: list, progress_callback=None):
         min_confidence=0.5
     )
 
-    # Iliskileri grafa ekle
+    # Add relations to graph
     added_edges = 0
     for rel in relations:
         if rel.get('confidence', 0) > 0.5:
@@ -297,7 +297,7 @@ def create_sandbox_rag(docs: list, progress_callback=None):
             except:
                 pass
 
-    # Step 4: Retriever olustur
+    # Step 4: Create retriever
     if progress_callback:
         progress_callback(4/total_steps, "Arama motoru hazirlaniyor...")
 
@@ -405,14 +405,14 @@ def main():
                 index=0
             )
 
-            # Hangi icerik kullanilacak?
+            # Which content to use?
             if st.session_state.uploaded_files_content:
-                # Tum dosyalari birlestir
+                # Combine all files
                 combined_content = ""
                 for fname, content in st.session_state.uploaded_files_content.items():
-                    # Dosya adini baslik olarak ekle
+                    # Add filename as heading
                     file_id = fname.replace('.txt', '').replace('.md', '').replace('.json', '')
-                    # Eger icerik ### ile baslamiyorsa, dosya adini ID olarak ekle
+                    # If content does not start with ###, add filename as ID
                     if not content.strip().startswith('###') and not content.strip().startswith('['):
                         combined_content += f"### {file_id}\n{content}\n\n"
                     else:
@@ -422,7 +422,7 @@ def main():
                 st.info(f"📁 {len(st.session_state.uploaded_files_content)} dosya birlestirildi")
             else:
                 default_text = PLAYGROUND_EXAMPLES.get(example_choice, "")
-                # Ornek aciklamalari
+                # Example descriptions
                 example_hints = {
                     "😰 Stres Zinciri": "💡 Sorgu: 'Stres is kazalarini nasil etkiler?'",
                     "🌍 Iklim Mini": "💡 Sorgu: 'Cimento iklimi nasil etkiler?'",
@@ -527,7 +527,7 @@ Dokuman 2 icerigi.""", language="markdown")
                 else:
                     import numpy as np
 
-                    # Classic RAG icin cosine similarity fonksiyonu
+                    # Cosine similarity function for Classic RAG
                     def cosine_similarity(vec1, vec2):
                         dot = np.dot(vec1, vec2)
                         norm1 = np.linalg.norm(vec1)
@@ -536,7 +536,7 @@ Dokuman 2 icerigi.""", language="markdown")
                             return 0.0
                         return float(dot / (norm1 * norm2))
 
-                    # Classic RAG arama
+                    # Classic RAG search
                     start_classic = time.time()
                     query_emb = sandbox['embedding'].get_text_embedding(query)
 
@@ -552,7 +552,7 @@ Dokuman 2 icerigi.""", language="markdown")
                     classic_results = sorted(classic_results, key=lambda x: x['score'], reverse=True)[:5]
                     classic_time = (time.time() - start_classic) * 1000
 
-                    # NeuroCausal RAG arama
+                    # NeuroCausal RAG search
                     start_neuro = time.time()
                     neuro_results = sandbox['retriever'].search(
                         query,
@@ -563,7 +563,7 @@ Dokuman 2 icerigi.""", language="markdown")
                     )
                     neuro_time = (time.time() - start_neuro) * 1000
 
-                    # Sonuclari yan yana goster
+                    # Show results side by side
                     st.divider()
 
                     col_classic, col_neuro = st.columns(2)
@@ -585,7 +585,7 @@ Dokuman 2 icerigi.""", language="markdown")
                     with col_neuro:
                         st.markdown("### 📗 NeuroCausal RAG")
 
-                        # Zincir ve enjeksiyon sayisi
+                        # Chain and injection count
                         chain_count = sum(1 for r in neuro_results if r.causal_chain and len(r.causal_chain) > 1)
                         injected_count = sum(1 for r in neuro_results if r.metadata and r.metadata.get('injected_from'))
 
@@ -603,7 +603,7 @@ Dokuman 2 icerigi.""", language="markdown")
                             badge_str = " ".join(badges)
 
                             with st.container():
-                                # Detay skorlar
+                                # Detailed scores
                                 sim = getattr(r, 'similarity_score', r.score)
                                 cau = getattr(r, 'causal_score', 0)
                                 imp = getattr(r, 'importance_score', 0)
@@ -612,7 +612,7 @@ Dokuman 2 icerigi.""", language="markdown")
                                 st.caption(f"Sim: {sim:.2f} | Cau: {cau:.2f} | Imp: {imp:.2f}")
                                 st.caption(r.content[:150] + "..." if len(r.content) > 150 else r.content)
 
-                                # Zincir goster
+                                # Show chain
                                 if r.causal_chain and len(r.causal_chain) > 1:
                                     chain_str = " → ".join(r.causal_chain[:4])
                                     if len(r.causal_chain) > 4:
@@ -621,11 +621,11 @@ Dokuman 2 icerigi.""", language="markdown")
 
                                 st.divider()
 
-                    # ===== KARSILASTIRMA OZETI =====
+                    # ===== COMPARISON SUMMARY =====
                     st.markdown("---")
                     st.markdown("### 📊 Karsilastirma Ozeti")
 
-                    # Anlamsal puanlama
+                    # Semantic scoring
                     classic_semantic = classic_avg
                     chain_bonus = chain_count * 0.15
                     injection_bonus = injected_count * 0.10
@@ -647,7 +647,7 @@ Dokuman 2 icerigi.""", language="markdown")
                         else:
                             st.info("🤝 Berabere")
 
-                    # Gorsel karsilastirma
+                    # Visual comparison
                     st.markdown("**Gorsel Karsilastirma:**")
                     max_score = max(classic_semantic, neuro_semantic, 0.01)
 
@@ -659,7 +659,7 @@ Dokuman 2 icerigi.""", language="markdown")
                         st.progress(min(neuro_semantic / max_score, 1.0))
                         st.caption(f"NeuroCausal: {neuro_semantic:.3f}")
 
-                    # Fark analizi
+                    # Difference analysis
                     if chain_count > 0 or injected_count > 0:
                         st.markdown("**🔍 NeuroCausal RAG Avantajlari:**")
                         advantages = []
@@ -671,11 +671,11 @@ Dokuman 2 icerigi.""", language="markdown")
                             advantages.append(f"- Nedensellik skorlari eklendi (+{causal_bonus:.2f} bonus)")
                         st.markdown("\n".join(advantages))
 
-                    # ===== LLM YANITLARI =====
+                    # ===== LLM RESPONSES =====
                     st.markdown("---")
                     st.markdown("### 🤖 LLM Yanitlari")
 
-                    # LLM client olustur
+                    # Create LLM client
                     try:
                         from neurocausal_rag.llm.client import LLMClient
                         from neurocausal_rag.config import LLMConfig
@@ -738,7 +738,7 @@ Cevap:"""
                                     except Exception as e:
                                         st.error(f"Hata: {e}")
 
-                            # Sonuc
+                            # Result
                             st.markdown("---")
                             st.markdown("### 🏆 Nihai Degerlendirme")
 
@@ -780,7 +780,7 @@ Cevap:"""
         else:
             sandbox = st.session_state.sandbox
 
-            # Istatistikler
+            # Statistics
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Dokumanlar", sandbox['doc_count'])
@@ -792,7 +792,7 @@ Cevap:"""
 
             st.divider()
 
-            # Iliski listesi
+            # Relations list
             st.markdown("### Bulunan Iliskiler")
 
             relations = sandbox.get('relations', [])
@@ -812,21 +812,21 @@ Cevap:"""
 
                     st.markdown(f"{color} **{rel['source']}** → **{rel['target']}** ({rel_type}, {conf:.2f})")
 
-            # Graf gorsellestirme (PyVis)
+            # Graph visualization (PyVis)
             st.divider()
             st.markdown("### Interaktif Graf")
 
             try:
                 from neurocausal_rag.visualization.graph_viz import create_graph_visualization
 
-                # Graf olustur
+                # Create graph
                 html_content = create_graph_visualization(
                     sandbox['graph'],
                     result_ids=[],
                     height="400px"
                 )
 
-                # HTML goster
+                # Show HTML
                 import streamlit.components.v1 as components
                 components.html(html_content, height=450, scrolling=True)
 

@@ -17,7 +17,7 @@ Usage:
     from neurocausal_rag.api import create_app
     app = create_app()
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 from typing import Optional, Callable

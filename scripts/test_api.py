@@ -1,19 +1,19 @@
 """
 NeuroCausal RAG - API Test Script
-FastAPI endpoint'lerini test eder ve Feedback Loop'u dogrular
+Tests FastAPI endpoints and validates Feedback Loop
 
-Kullanim:
-    # Oncelikle API'yi baslat:
+Usage:
+    # First start the API:
     uvicorn neurocausal_rag.api.app:app --reload
 
-    # Sonra testi calistir:
+    # Then run the test:
     python scripts/test_api.py
 
-    # Veya Docker ile:
+    # Or with Docker:
     docker-compose up -d api
     python scripts/test_api.py --host localhost --port 8000
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import requests
@@ -142,7 +142,7 @@ class APITester:
             results = response.get("results", [])
             self.log(f"Search returned {len(results)} results", "INFO")
 
-            # Sonuclari goster
+            # Show results
             for i, r in enumerate(results[:3], 1):
                 self.log(f"  Result {i}: {r.get('id')} (score: {r.get('score', 0):.3f})", "INFO")
 
@@ -167,7 +167,7 @@ class APITester:
         # =================================================================
         self.log("Testing Feedback Endpoint (RLHF)...", "INFO")
 
-        # Pozitif feedback
+        # Positive feedback
         feedback_result = self.test_endpoint("POST", "/api/v1/feedback", {
             "query": "stres etkileri",
             "result_ids": ["test_stress", "test_kortizol"],
@@ -178,7 +178,7 @@ class APITester:
         if feedback_result.get("success"):
             self.log("Positive feedback recorded", "OK")
 
-        # Negatif feedback
+        # Negative feedback
         self.test_endpoint("POST", "/api/v1/feedback", {
             "query": "alakasiz sorgu",
             "result_ids": ["test_dikkat"],

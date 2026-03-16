@@ -1,18 +1,17 @@
 """
 NeuroCausal RAG - Multi-Hop Retrieval
-v5.2 - FAZ 2.1
 
-Multi-hop retrieval ile dolayli baglantilar uzerinden dokuman bulma.
+Finding documents through indirect connections via multi-hop retrieval.
 
-Ornek:
-    Sorgu: "Sera gazlari iklim degisikligine nasil neden olur?"
-    Direkt eslesen yok, ama zincir var:
+Example:
+    Query: "How do greenhouse gases cause climate change?"
+    No direct match, but a chain exists:
 
-    [Sera Gazlari] --causes--> [Sicaklik Artisi] --causes--> [Buzul Erimesi]
+    [Greenhouse Gases] --causes--> [Temperature Rise] --causes--> [Glacier Melting]
 
-    Multi-hop retrieval bu zinciri kesfeder ve ara dokumanlari da getirir.
+    Multi-hop retrieval discovers this chain and also fetches intermediate documents.
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import numpy as np

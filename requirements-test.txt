@@ -1,5 +1,4 @@
 # NeuroCausal RAG Test Dependencies
-# v5.1 - FAZ 1.4
 # Install with: pip install -r requirements-test.txt
 
 # Core testing

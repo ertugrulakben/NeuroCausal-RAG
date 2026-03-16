@@ -1,9 +1,8 @@
 """
-NeuroCausal RAG v5.2 - Streamlit UI
-Chatbot + Benchmark + Karsilastirma + Case Study Arayuzu
+NeuroCausal RAG - Streamlit UI
+Chatbot + Benchmark + Comparison + Case Study Interface
 
-Yazar: Ertugrul Akben
-E-posta: i@ertugrulakben.com
+Author: Ertugrul Akben
 """
 
 import os
@@ -27,7 +26,7 @@ except ImportError:
 
 # Page config
 st.set_page_config(
-    page_title="NeuroCausal RAG v5.2",
+    page_title="NeuroCausal RAG v6.1",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -387,7 +386,7 @@ def search_neuro(systems, query, k=5, alpha=None, beta=None, gamma=None):
     results = systems['neuro'].search(query, k, alpha=alpha, beta=beta, gamma=gamma)
     elapsed = time.time() - start
 
-    # Entity resolution info (v5.1)
+    # Entity resolution info
     resolved_entities = []
     if results and results[0].resolved_entities:
         resolved_entities = results[0].resolved_entities
@@ -455,7 +454,7 @@ neden-sonuc iliskilerini acikla. Ornegin: "X, Y'ye neden olur cunku..."."""
 # ============================================================================
 with st.sidebar:
     st.markdown("# 🧠 NeuroCausal RAG")
-    st.markdown("**v5.2** | Nedensel Bilgi Getirme + Multi-Hop + Memory")
+    st.markdown("**v6.1** | Nedensel Bilgi Getirme + Multi-Hop + Memory")
     st.markdown("---")
 
     # Data source selection
@@ -642,7 +641,7 @@ with st.sidebar:
 # ============================================================================
 # MAIN CONTENT
 # ============================================================================
-st.markdown('<h1 class="main-header">🧠 NeuroCausal RAG v5.2</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🧠 NeuroCausal RAG v6.1</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Nedensel Zincirlerle Zenginlestirilmis Bilgi Getirme Sistemi</p>', unsafe_allow_html=True)
 
 # Load systems
@@ -823,7 +822,7 @@ with tab0:
             st.rerun()
     with col_q2:
         if st.button("Yeni ozellikler neler?", key="sys_q2", use_container_width=True):
-            run_system_search("v5.2 yeni ozellikler neler?")
+            run_system_search("v6.1 yeni ozellikler neler?")
             st.rerun()
     with col_q3:
         if st.button("API nasil kullanilir?", key="sys_q3", use_container_width=True):
@@ -943,7 +942,7 @@ with tab1:
             answer = f"Bulunan sonuclar:\n" + "\n".join([f"- {r['content'][:150]}..." for r in neuro_results[:3]])
             llm_time, tokens = 0, 0
 
-        # Celiski kontrolu (v5.1 - FAZ 1.2)
+        # Celiski kontrolu (FAZ 1.2)
         contradictions = []
         try:
             contradictions = systems['neuro'].check_contradictions_in_results(neuro_results[:5])
@@ -958,8 +957,8 @@ with tab1:
             'time': neuro_time,
             'llm_time': llm_time,
             'tokens': tokens,
-            'resolved_entities': resolved_entities,  # Entity linking sonuclari (v5.1)
-            'contradictions': contradictions  # Celiski tespiti (v5.1)
+            'resolved_entities': resolved_entities,  # Entity linking sonuclari
+            'contradictions': contradictions  # Celiski tespiti
         })
 
     # Display chat history
@@ -970,7 +969,7 @@ with tab1:
         else:
             st.markdown(f'<div class="bot-msg">🤖 {msg["content"]}</div>', unsafe_allow_html=True)
 
-            # ENTITY LINKING BILGISI (v5.1)
+            # ENTITY LINKING BILGISI
             if msg.get('resolved_entities') and len(msg['resolved_entities']) > 0:
                 entities_text = ", ".join(msg['resolved_entities'][:3])
                 st.markdown(f"""
@@ -979,7 +978,7 @@ with tab1:
                 </div>
                 """, unsafe_allow_html=True)
 
-            # CELISKI UYARISI (v5.1 - FAZ 1.2)
+            # CELISKI UYARISI (FAZ 1.2)
             if msg.get('contradictions') and len(msg['contradictions']) > 0:
                 for contr in msg['contradictions'][:2]:  # Max 2 celiski goster
                     st.markdown(f"""
@@ -1795,7 +1794,7 @@ with tab5:
             st.error(f"Hata: {e}")
 
     with admin_tab4:
-        st.markdown("#### 🔗 Entity Linking Yonetimi (v5.1)")
+        st.markdown("#### 🔗 Entity Linking Yonetimi")
         st.markdown("""
         **Entity Linking Nedir?** Kod adlarini gercek isimlerle eslestirir.
         Ornegin: "Mavi Ufuk" → "Gunes Enerjisi A.S. Satin Alma Projesi"
@@ -1870,7 +1869,7 @@ with tab5:
                 st.error(f"NER hatasi: {e}")
 
     with admin_tab5:
-        st.markdown("#### 🧠 Reasoning Analizi (v5.1)")
+        st.markdown("#### 🧠 Reasoning Analizi")
         st.markdown("""
         **Celiski Tespiti:** Belgeler arasindaki celiskili bilgileri bulur.
         **Zamansal Dogrulama:** Nedensel iliskilerin zaman sirasini kontrol eder.
@@ -1942,7 +1941,7 @@ with tab5:
             st.error(f"Hata: {e}")
 
     with admin_tab6:
-        st.markdown("#### 🧠 Hafiza Sistemi (v5.2)")
+        st.markdown("#### 🧠 Hafiza Sistemi")
         st.markdown("""
         **Hafiza Sistemi Nedir?** Arama sonuclari, notlar ve nedensellik geri bildirimlerini kalici olarak saklar.
         Model ogrensin, hatalar duzeltilsin, notlar alinsin - her sey hafizada kalir.
@@ -2191,11 +2190,11 @@ with tab6:
 
     with hakkinda_tab1:
         st.markdown("""
-        # 🧠 NeuroCausal RAG v5.2
+        # 🧠 NeuroCausal RAG v6.1
 
         > **"Sadece benzer degil, NEDENSEL olarak iliskili bilgileri bulan akilli arama sistemi"**
         >
-        > **v5.2 Yenilikler:** Multi-Hop Retrieval, Search Optimizer, Query Decomposition, Memory System
+        > **v6.1 Yenilikler:** Multi-Hop Retrieval, Search Optimizer, Query Decomposition, Memory System
 
         ---
 
@@ -2231,9 +2230,9 @@ with tab6:
         ## 👨‍💻 Gelistirici
 
         **Ertugrul Akben**
-        - 📧 E-posta: i@ertugrulakben.com
+        - 📧 Email: i@ertugrulakben.com
         - 🌐 Web: ertugrulakben.com
-        - 📅 Versiyon: 5.2.0 (2025)
+        - 📅 Version: 6.1.0 (2026)
         """)
 
     with hakkinda_tab2:
@@ -2449,7 +2448,7 @@ with tab6:
 # ============================================================================
 st.markdown("""
 <div class="footer">
-    <p>NeuroCausal RAG v5.2 | Ertugrul Akben | 2025</p>
+    <p>NeuroCausal RAG v6.1 | Ertugrul Akben | 2026</p>
     <p><small>Nedensel Bilgi Getirme ile Daha Akilli Aramalar</small></p>
 </div>
 """, unsafe_allow_html=True)

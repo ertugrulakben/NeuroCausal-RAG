@@ -2,9 +2,7 @@
 NeuroCausal RAG - Configuration Management
 Pydantic-based type-safe configuration
 
-Yazar: Ertugrul Akben
-E-posta: i@ertugrulakben.com
-Versiyon: 6.1.0
+Author: Ertugrul Akben
 """
 
 from pydantic import BaseModel, Field, field_validator
@@ -118,7 +116,7 @@ class LearningConfig(BaseModel):
 
 class NeuroCausalConfig(BaseModel):
     """Main configuration container"""
-    version: str = Field(default="5.2.0")
+    version: str = Field(default="6.1.0")
     debug: bool = Field(default=False)
     data_dir: Path = Field(default=Path("./data"))
 

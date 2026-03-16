@@ -3,11 +3,11 @@ NeuroCausal RAG - Neuro-Causal Graph-Based Intelligent Information Retrieval Sys
 
 Façade Pattern: Single entry point for the entire system.
 
-Yazar: Ertugrul Akben
-E-posta: i@ertugrulakben.com
+Author: Ertugrul Akben
+Email: i@ertugrulakben.com
 Website: https://ertugrulakben.com
-Versiyon: 6.1.0
-Lisans: MIT
+Version: 6.1.0
+License: MIT
 
 v6.0 Features:
 - Enterprise backends (Neo4j, Milvus)
@@ -21,17 +21,17 @@ v6.0 Features:
 - Contradiction detection & temporal reasoning
 - Entity linking with alias resolution
 
-Kullanım:
+Usage:
     from neurocausal_rag import NeuroCausalRAG
 
     rag = NeuroCausalRAG()
-    rag.add_document("doc1", "İklim değişikliği küresel bir sorundur.")
+    rag.add_document("doc1", "Climate change is a global issue.")
     rag.add_causal_link("doc1", "doc2", "causes")
 
-    results = rag.search("iklim değişikliği etkileri")
-    answer = rag.generate_answer("İklim değişikliğinin etkileri nelerdir?")
+    results = rag.search("climate change effects")
+    answer = rag.generate_answer("What are the effects of climate change?")
 
-    # Agentic RAG (v5.0)
+    # Agentic RAG
     from neurocausal_rag.agents import create_agent
     agent = create_agent(rag._retriever, rag._graph, rag._llm)
     result = agent.run("What causes global warming?")
@@ -386,7 +386,7 @@ class NeuroCausalRAG:
         return []
 
     # =========================================================================
-    # ENTITY LINKING (v5.1)
+    # ENTITY LINKING
     # =========================================================================
     def learn_aliases(self, documents: Optional[List[Dict]] = None) -> int:
         """
@@ -480,7 +480,7 @@ class NeuroCausalRAG:
         ]
 
     # =========================================================================
-    # REASONING (v5.1 - FAZ 1.2/1.3)
+    # REASONING
     # =========================================================================
     def detect_contradictions(
         self,
@@ -622,7 +622,7 @@ class NeuroCausalRAG:
         self._retriever.save_index(str(save_dir / "index"))
         self.config.to_yaml(save_dir / "config.yaml")
 
-        # Save entity aliases (v5.1)
+        # Save entity aliases
         if self._entity_linker:
             self._entity_linker.alias_store.save(str(save_dir / "aliases.json"))
 
@@ -649,7 +649,7 @@ class NeuroCausalRAG:
         if (load_dir / "index").exists():
             self._retriever.load_index(str(load_dir / "index"))
 
-        # Load entity aliases (v5.1)
+        # Load entity aliases
         if (load_dir / "aliases.json").exists() and self._entity_linker:
             self._entity_linker.alias_store.load(str(load_dir / "aliases.json"))
 
@@ -679,7 +679,7 @@ class NeuroCausalRAG:
             }
         }
 
-        # Entity linking stats (v5.1)
+        # Entity linking stats
         if self._entity_linker:
             stats["entity_linking"] = {
                 "alias_count": len(self._entity_linker.alias_store.aliases),

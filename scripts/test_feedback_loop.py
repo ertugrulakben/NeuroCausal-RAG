@@ -1,17 +1,17 @@
 """
 NeuroCausal RAG - Feedback Loop (RLHF) Test
-Sistemin kullanici geri bildiriminden ogrendigini dogrular
+Validates that the system learns from user feedback
 
-Bu test:
-1. Birkac dokuman ekler
-2. Aralarinda iliski olusturur
-3. Feedback gonderir
-4. Edge weight'inin degistigini kontrol eder
+This test:
+1. Adds several documents
+2. Creates relations between them
+3. Sends feedback
+4. Checks if edge weights changed
 
-Kullanim:
+Usage:
     python scripts/test_feedback_loop.py
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import sys
@@ -29,18 +29,18 @@ def print_header(text: str):
 
 
 def print_step(step: int, text: str):
-    print(f"\n[ADIM {step}] {text}")
+    print(f"\n[STEP {step}] {text}")
     print("-" * 40)
 
 
 def main():
     print_header("NEUROCAUSAL RAG - FEEDBACK LOOP (RLHF) TEST")
-    print(f"Tarih: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     # =================================================================
     # STEP 1: Setup
     # =================================================================
-    print_step(1, "Sistem kuruluyor...")
+    print_step(1, "Setting up system...")
 
     from neurocausal_rag.embedding.text import TextEmbedding
     from neurocausal_rag.core.graph import GraphEngine
@@ -50,27 +50,27 @@ def main():
     # Embedding engine
     emb_config = EmbeddingConfig()
     embedding = TextEmbedding(emb_config)
-    print("  ✓ Embedding motoru yuklendi")
+    print("  + Embedding engine loaded")
 
     # Graph engine
     graph_config = GraphConfig()
     graph = GraphEngine(graph_config)
-    print("  ✓ Graf motoru yuklendi")
+    print("  + Graph engine loaded")
 
     # Feedback loop
     feedback_loop = FeedbackLoop(
         graph_engine=graph,
         storage_path="test_feedback",
-        use_sqlite=False,  # JSON kullan (test icin)
+        use_sqlite=False,  # Use JSON (for test)
         auto_adjust=True,
         learning_rate=0.2
     )
-    print("  ✓ Feedback loop yuklendi")
+    print("  + Feedback loop loaded")
 
     # =================================================================
     # STEP 2: Add Documents
     # =================================================================
-    print_step(2, "Dokumanlar ekleniyor...")
+    print_step(2, "Adding documents...")
 
     docs = [
         {"id": "ekonomi_faiz", "content": "Faiz oranlarinin artmasi kredi maliyetlerini yukselir."},
@@ -84,14 +84,14 @@ def main():
         graph.add_node(doc['id'], doc['content'], emb)
         print(f"  + {doc['id']}")
 
-    print(f"\n  Toplam dokuman: {graph.node_count}")
+    print(f"\n  Total documents: {graph.node_count}")
 
     # =================================================================
     # STEP 3: Add Initial Edges
     # =================================================================
-    print_step(3, "Iliskiler ekleniyor...")
+    print_step(3, "Adding relations...")
 
-    # Baslangic weight'leri 0.5 olsun
+    # Initial weights set to 0.5
     edges = [
         ("ekonomi_faiz", "ekonomi_kredi", "causes", 0.5),
         ("ekonomi_kredi", "ekonomi_tuketim", "causes", 0.5),
@@ -102,12 +102,12 @@ def main():
         graph.add_edge(src, tgt, rel, weight)
         print(f"  + {src} --[{rel}]--> {tgt} (weight: {weight})")
 
-    print(f"\n  Toplam iliski: {graph.edge_count}")
+    print(f"\n  Total relations: {graph.edge_count}")
 
     # =================================================================
     # STEP 4: Record Initial Weights
     # =================================================================
-    print_step(4, "Baslangic weight'leri kaydediliyor...")
+    print_step(4, "Recording initial weights...")
 
     initial_weights = {}
     for src, tgt, rel, _ in edges:
@@ -121,10 +121,10 @@ def main():
     # =================================================================
     # STEP 5: Send Positive Feedback
     # =================================================================
-    print_step(5, "Pozitif feedback gonderiliyor...")
+    print_step(5, "Sending positive feedback...")
 
-    # Yuksek rating ile feedback
-    for i in range(5):  # 5 kez pozitif feedback
+    # High rating feedback
+    for i in range(5):  # 5 positive feedback
         feedback_loop.record(
             query="faiz issizligi nasil etkiler",
             result_ids=["ekonomi_faiz", "ekonomi_kredi", "ekonomi_tuketim", "ekonomi_issizlik"],
@@ -137,9 +137,9 @@ def main():
     # =================================================================
     # STEP 6: Check Weight Changes
     # =================================================================
-    print_step(6, "Weight degisimleri kontrol ediliyor...")
+    print_step(6, "Checking weight changes...")
 
-    print("\n  Edge Weight Degisimleri:")
+    print("\n  Edge Weight Changes:")
     print("  " + "-" * 50)
 
     weight_increased = False
@@ -175,7 +175,7 @@ def main():
     # =================================================================
     # STEP 7: Check Feedback Stats
     # =================================================================
-    print_step(7, "Feedback istatistikleri...")
+    print_step(7, "Feedback statistics...")
 
     stats = feedback_loop.store.get_stats()
     print(f"  Toplam feedback: {stats.get('total_feedback', 0)}")
@@ -186,7 +186,7 @@ def main():
     # =================================================================
     # STEP 8: Test Document Score
     # =================================================================
-    print_step(8, "Dokuman skorlari kontrol ediliyor...")
+    print_step(8, "Checking document scores...")
 
     for doc_id in ["ekonomi_faiz", "ekonomi_kredi"]:
         score = feedback_loop.get_document_score(doc_id)
@@ -198,26 +198,26 @@ def main():
     # =================================================================
     # SUMMARY
     # =================================================================
-    print_header("TEST SONUCU")
+    print_header("TEST RESULT")
 
     if weight_increased:
         print("\n✅ BASARILI: Feedback Loop calisiyor!")
-        print("   Pozitif feedback sonrasi edge weight'leri artti.")
-        print("   Sistem kullanici geri bildiriminden ogreniyor.")
+        print("   Edge weights increased after positive feedback.")
+        print("   System is learning from user feedback.")
     else:
         print("\n⚠️ UYARI: Weight degisimi gozlemlenmedi.")
-        print("   Bu normal olabilir - WeightAdjuster min_feedback_count")
-        print("   esigine ulasilmamis olabilir (varsayilan: 3)")
+        print("   This may be normal - WeightAdjuster min_feedback_count")
+        print("   threshold may not have been reached (default: 3)")
 
     print("\n" + "=" * 60)
-    print("Feedback Loop testi tamamlandi.")
+    print("Feedback Loop test completed.")
     print("=" * 60 + "\n")
 
     # Cleanup
     import os
     if os.path.exists("test_feedback.json"):
         os.remove("test_feedback.json")
-        print("(Test dosyasi temizlendi)")
+        print("(Test file cleaned up)")
 
 
 if __name__ == "__main__":

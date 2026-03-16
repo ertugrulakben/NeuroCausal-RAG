@@ -1,10 +1,7 @@
 """
 NeuroCausal RAG - Retriever Unit Tests
-v5.1 - FAZ 1.4
 
-Bu testler mock objelerle calisiyor ve Retriever API'sini test ediyor.
-
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 import pytest

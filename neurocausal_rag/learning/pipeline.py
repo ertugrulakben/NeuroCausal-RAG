@@ -1,18 +1,18 @@
 """
 NeuroCausal RAG - Discovery Pipeline
-Tüm discovery yöntemlerini birleştiren unified pipeline
+Unified pipeline combining all discovery methods
 
 Pipeline Modes:
-    - FAST: Sadece semantic discovery (production için önerilen)
-    - BALANCED: Semantic + Funnel (iyi denge)
-    - DEEP: Semantic + Funnel + Entity (en kapsamlı)
-    - FULL: Tüm yöntemler (development/research için)
+    - FAST: Semantic discovery only (recommended for production)
+    - BALANCED: Semantic + Funnel (good balance)
+    - DEEP: Semantic + Funnel + Entity (most comprehensive)
+    - FULL: All methods (for development/research)
 
-Kullanım:
+Usage:
     >>> pipeline = DiscoveryPipeline(mode="balanced")
     >>> relations = pipeline.run(documents, embeddings)
 
-Yazar: Ertuğrul Akben
+Author: Ertugrul Akben
 """
 
 import time

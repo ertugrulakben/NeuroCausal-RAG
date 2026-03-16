@@ -2,7 +2,7 @@
 NeuroCausal RAG - Graph Visualization
 PyVis ile interaktif graf gorsellestirme
 
-Yazar: Ertugrul Akben
+Author: Ertugrul Akben
 """
 
 from typing import List, Dict, Optional, Any
@@ -13,16 +13,16 @@ import os
 from ..core.edge import RelationType
 
 
-# Iliski tipi renkleri
+# Relation type colors
 RELATION_COLORS = {
-    RelationType.CAUSES: "#ff6b6b",      # Kirmizi - nedensellik
-    RelationType.SUPPORTS: "#4ecdc4",    # Turkuaz - destek
-    RelationType.REQUIRES: "#ffe66d",    # Sari - gereklilik
-    RelationType.RELATED: "#95afc0",     # Gri - iliski
-    RelationType.CONTRADICTS: "#eb4d4b", # Koyu kirmizi - celiske
+    RelationType.CAUSES: "#ff6b6b",      # Red - causality
+    RelationType.SUPPORTS: "#4ecdc4",    # Turquoise - support
+    RelationType.REQUIRES: "#ffe66d",    # Yellow - requirement
+    RelationType.RELATED: "#95afc0",     # Gray - relation
+    RelationType.CONTRADICTS: "#eb4d4b", # Dark red - contradiction
 }
 
-# Iliski tipi kalinliklari (strength * multiplier)
+# Relation type widths (strength * multiplier)
 RELATION_WIDTHS = {
     RelationType.CAUSES: 4,
     RelationType.SUPPORTS: 3,
@@ -34,24 +34,24 @@ RELATION_WIDTHS = {
 
 class CausalGraphVisualizer:
     """
-    Nedensel graf gorsellestirici.
+    Causal graph visualizer.
 
-    PyVis kullanarak interaktif HTML graf olusturur.
+    Creates interactive HTML graphs using PyVis.
     """
 
     def __init__(self, graph_engine, height: str = "600px", width: str = "100%"):
         """
         Args:
             graph_engine: GraphEngine instance
-            height: Graf yuksekligi
-            width: Graf genisligi
+            height: Graph height
+            width: Graph width
         """
         self.graph = graph_engine
         self.height = height
         self.width = width
 
     def _create_network(self, physics: bool = True) -> Network:
-        """Yeni PyVis Network olustur"""
+        """Create new PyVis Network"""
         net = Network(
             height=self.height,
             width=self.width,
@@ -62,7 +62,7 @@ class CausalGraphVisualizer:
             cdn_resources='remote'
         )
 
-        # Fizik ayarlari
+        # Physics settings
         if physics:
             net.set_options("""
             {
@@ -104,13 +104,13 @@ class CausalGraphVisualizer:
         return net
 
     def _truncate_content(self, content: str, max_len: int = 50) -> str:
-        """Icerigi kisalt"""
+        """Truncate content"""
         if len(content) <= max_len:
             return content
         return content[:max_len] + "..."
 
     def _get_node_title(self, node_id: str) -> str:
-        """Node tooltip icerigi olustur"""
+        """Create node tooltip content"""
         node = self.graph.get_node(node_id)
         if not node:
             return node_id
@@ -118,7 +118,7 @@ class CausalGraphVisualizer:
         importance = node.get('importance', 0)
         content = node.get('content', '')[:200]
         metadata = node.get('metadata', {})
-        category = metadata.get('category', 'Bilinmiyor')
+        category = metadata.get('category', 'Unknown')
 
         return f"""<b>{node_id}</b>
 <hr>
@@ -129,17 +129,17 @@ class CausalGraphVisualizer:
 
     def visualize_full_graph(self, max_nodes: int = 100) -> str:
         """
-        Tum grafi gorsellestir.
+        Visualize full graph.
 
         Args:
-            max_nodes: Gosterilecek maksimum node sayisi
+            max_nodes: Maximum number of nodes to display
 
         Returns:
             HTML string
         """
         net = self._create_network()
 
-        # Node'lari ekle
+        # Add nodes
         nodes_added = 0
         for node_id in self.graph.nodes:
             if nodes_added >= max_nodes:
@@ -150,7 +150,7 @@ class CausalGraphVisualizer:
                 continue
 
             importance = node.get('importance', 0)
-            # Boyut: importance'a gore (min 20, max 50)
+            # Size: based on importance (min 20, max 50)
             size = 20 + (importance * 300)
             size = max(20, min(50, size))
 
@@ -164,7 +164,7 @@ class CausalGraphVisualizer:
             )
             nodes_added += 1
 
-        # Edge'leri ekle
+        # Add edges
         for source, target, data in self.graph.graph.edges(data=True):
             if source not in [n['id'] for n in net.nodes] or target not in [n['id'] for n in net.nodes]:
                 continue
@@ -183,7 +183,7 @@ class CausalGraphVisualizer:
                 width=width
             )
 
-        # HTML olustur
+        # Generate HTML
         return self._generate_html(net)
 
     def visualize_search_results(
@@ -194,20 +194,20 @@ class CausalGraphVisualizer:
         show_all_connections: bool = True
     ) -> str:
         """
-        Arama sonuclarini gorsellestir.
+        Visualize search results.
 
         Args:
-            query: Arama sorgusu
+            query: Search query
             results: SearchResult listesi
-            chains: Her sonuc icin nedensel zincir {node_id: [chain_nodes]}
-            show_all_connections: Tum baglantilari goster
+            chains: Causal chain for each result {node_id: [chain_nodes]}
+            show_all_connections: Show all connections
 
         Returns:
             HTML string
         """
         net = self._create_network()
 
-        # Query node (kirmizi)
+        # Query node (red)
         net.add_node(
             "QUERY",
             label=self._truncate_content(query, 30),
@@ -218,7 +218,7 @@ class CausalGraphVisualizer:
             font={"size": 16, "color": "#ffffff"}
         )
 
-        # Sonuc node'lari ve chain'leri topla
+        # Collect result nodes and chains
         all_nodes = set()
         result_nodes = set()
         injected_nodes = set()
@@ -228,17 +228,17 @@ class CausalGraphVisualizer:
             result_nodes.add(node_id)
             all_nodes.add(node_id)
 
-            # Injected mi kontrol et
+            # Check if injected
             metadata = result.metadata if hasattr(result, 'metadata') else result.get('metadata', {})
             if metadata.get('injected_from'):
                 injected_nodes.add(node_id)
 
-            # Chain node'larini ekle
+            # Add chain nodes
             if chains and node_id in chains:
                 for chain_node in chains[node_id]:
                     all_nodes.add(chain_node)
 
-        # Node'lari ekle
+        # Add nodes
         for node_id in all_nodes:
             node = self.graph.get_node(node_id)
             if not node:
@@ -246,7 +246,7 @@ class CausalGraphVisualizer:
 
             importance = node.get('importance', 0)
 
-            # Renk ve boyut belirle
+            # Determine color and size
             if node_id in result_nodes:
                 if node_id in injected_nodes:
                     color = "#f39c12"  # Turuncu - enjekte
@@ -267,7 +267,7 @@ class CausalGraphVisualizer:
                 shape="dot"
             )
 
-        # Query -> Sonuc edge'leri
+        # Query -> Result edges
         for i, result in enumerate(results):
             node_id = result.node_id if hasattr(result, 'node_id') else result.get('node_id', str(i))
             score = result.score if hasattr(result, 'score') else result.get('score', 0)
@@ -281,7 +281,7 @@ class CausalGraphVisualizer:
                 dashes=True
             )
 
-        # Gercek graf edge'lerini ekle
+        # Add actual graph edges
         if show_all_connections:
             added_edges = set()
             for source, target, data in self.graph.graph.edges(data=True):
@@ -314,12 +314,12 @@ class CausalGraphVisualizer:
         max_depth: int = 4
     ) -> str:
         """
-        Nedensel zinciri gorsellestir.
+        Visualize causal chain.
 
         Args:
-            source_id: Baslangic node
-            target_id: Bitis node (opsiyonel)
-            max_depth: Maksimum derinlik
+            source_id: Start node
+            target_id: End node (optional)
+            max_depth: Maximum depth
 
         Returns:
             HTML string
@@ -327,7 +327,7 @@ class CausalGraphVisualizer:
         net = self._create_network(physics=False)
 
         if target_id:
-            # Iki node arasindaki yol
+            # Path between two nodes
             path, score = self.graph.find_causal_path(source_id, target_id)
             chain = path
         else:
@@ -335,21 +335,21 @@ class CausalGraphVisualizer:
             chain = self.graph.get_causal_chain(source_id, max_depth, 'forward')
 
         if not chain:
-            # Bos graf
+            # Empty graph
             net.add_node(
                 "empty",
-                label="Zincir bulunamadi",
+                label="No chain found",
                 color="#e74c3c",
                 size=30
             )
             return self._generate_html(net)
 
-        # Node'lari sirasiz ekle (soldan saga)
+        # Add nodes sequentially (left to right)
         x_pos = 0
         for i, node_id in enumerate(chain):
             node = self.graph.get_node(node_id)
 
-            # Ilk node yesil, son node kirmizi, aradakiler mavi
+            # First node green, last node red, middle ones blue
             if i == 0:
                 color = "#27ae60"  # Yesil - baslangic
                 size = 40
@@ -372,12 +372,12 @@ class CausalGraphVisualizer:
             )
             x_pos += 200
 
-        # Zincir edge'lerini ekle
+        # Add chain edges
         for i in range(len(chain) - 1):
             source = chain[i]
             target = chain[i + 1]
 
-            # Gercek edge verisini al
+            # Get actual edge data
             edge_data = self.graph.graph.get_edge_data(source, target)
             if edge_data:
                 rel_type = edge_data.get('relation_type', RelationType.CAUSES)
@@ -401,30 +401,30 @@ class CausalGraphVisualizer:
 
     def _generate_html(self, net: Network) -> str:
         """
-        PyVis Network'u HTML string'e donustur.
+        Convert PyVis Network to HTML string.
 
-        Gecici dosya olusturup okur, sonra siler.
+        Creates a temporary file, reads it, then deletes it.
         """
-        # Gecici dosya olustur
+        # Create temp file
         with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
             temp_path = f.name
 
         try:
-            # HTML'i dosyaya yaz
+            # Write HTML to file
             net.save_graph(temp_path)
 
-            # Dosyayi oku
+            # Read file
             with open(temp_path, 'r', encoding='utf-8') as f:
                 html = f.read()
 
             return html
         finally:
-            # Gecici dosyayi sil
+            # Delete temp file
             if os.path.exists(temp_path):
                 os.remove(temp_path)
 
     def get_legend_html(self) -> str:
-        """Graf aciklama HTML'i olustur"""
+        """Create graph legend HTML"""
         return """
         <div style="background: #1a1a2e; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
             <h4 style="color: #fafafa; margin-bottom: 10px;">Renk Kodlari</h4>
@@ -455,12 +455,12 @@ def create_graph_visualization(
     height: str = "500px"
 ) -> str:
     """
-    Graf gorsellestirmesi icin helper fonksiyon.
+    Helper function for graph visualization.
 
     Args:
         graph_engine: GraphEngine instance
-        result_ids: Vurgulanacak node ID'leri
-        height: Graf yuksekligi
+        result_ids: Node IDs to highlight
+        height: Graph height
 
     Returns:
         HTML string
@@ -468,7 +468,7 @@ def create_graph_visualization(
     visualizer = CausalGraphVisualizer(graph_engine, height=height)
 
     if result_ids:
-        # Sonuclari vurgula (basit mod)
+        # Highlight results (simple mode)
         return visualizer.visualize_full_graph(max_nodes=50)
     else:
         return visualizer.visualize_full_graph(max_nodes=50)
