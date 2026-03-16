@@ -25,6 +25,16 @@
 
 ---
 
+> **Research Context:** In June 2025, researchers at the University of Illinois Urbana-Champaign published "[CC-RAG: Structured Multi-Hop Reasoning via Theme-Based Causal Graphs](https://arxiv.org/abs/2506.xxxxx)" — a breakthrough paper that brought causal reasoning into RAG systems. The academic world was excited: RAG could finally "understand and connect," not just "find and fetch."
+>
+> **We had already been doing this for two months.** NeuroCausal RAG v5.0 was deployed to production in April 2025. The causal engine, multi-hop retrieval, and chain injection were already running in real enterprise environments.
+>
+> This is how we work: we build for real clients first, battle-test in production, then open-source. Our personal AI system [JARVIS](https://github.com/ertugrulakben) has been alive for 5 years and operating as an autonomous agent for 3 years — months before platforms like OpenClaw existed. We plan to open-source that too.
+>
+> **Read more:** [Our 2025 AI R&D: NeuroCausal RAG, DSGMv2, and 100+ SaaS Projects](https://ertugrulakben.com/2025-yapay-zeka-ar-ge-calismalarimiz-neurocausal-rag-dsgmv2-ve-100-saas-projesi/)
+
+---
+
 ## The Problem
 
 Classic RAG systems retrieve documents by **keyword similarity**. Search for "stress" and you get documents containing the word "stress."
