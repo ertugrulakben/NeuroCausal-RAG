@@ -3,7 +3,7 @@
 # Author: Ertugrul Akben
 # Website: https://ertugrulakben.com
 
-version: "6.0.0"
+version: "6.1.0"
 debug: false
 data_dir: "./data"
 

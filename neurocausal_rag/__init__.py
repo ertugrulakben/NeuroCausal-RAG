@@ -6,7 +6,7 @@ Façade Pattern: Single entry point for the entire system.
 Yazar: Ertugrul Akben
 E-posta: i@ertugrulakben.com
 Website: https://ertugrulakben.com
-Versiyon: 6.0.0
+Versiyon: 6.1.0
 Lisans: MIT
 
 v6.0 Features:
@@ -37,13 +37,14 @@ Kullanım:
     result = agent.run("What causes global warming?")
 """
 
-__version__ = "6.0.0"
+__version__ = "6.1.0"
 __author__ = "Ertugrul Akben"
 __email__ = "i@ertugrulakben.com"
 
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 import logging
+import os
 
 from .config import (
     NeuroCausalConfig,
@@ -52,6 +53,47 @@ from .config import (
     load_config
 )
 from .interfaces import SearchResult, EvaluationResult, EntityResolution
+
+# --- Optional component imports (may have heavy dependencies) ---
+try:
+    from .core.graph import GraphEngine
+except ImportError:
+    GraphEngine = None
+
+try:
+    from .search.retriever import Retriever
+except ImportError:
+    Retriever = None
+
+try:
+    from .entity.linker import EntityLinker
+except ImportError:
+    EntityLinker = None
+
+try:
+    from .reasoning.contradiction import ContradictionDetector
+except ImportError:
+    ContradictionDetector = None
+
+try:
+    from .reasoning.temporal import TemporalEngine
+except ImportError:
+    TemporalEngine = None
+
+
+def _setup_logging() -> None:
+    """Configure package-level logging from NEUROCAUSAL_LOG_LEVEL env variable."""
+    level_name = os.environ.get("NEUROCAUSAL_LOG_LEVEL", "WARNING").upper()
+    level = getattr(logging, level_name, logging.WARNING)
+    pkg_logger = logging.getLogger("neurocausal_rag")
+    if not pkg_logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("[%(levelname)s] %(name)s: %(message)s"))
+        pkg_logger.addHandler(handler)
+    pkg_logger.setLevel(level)
+
+
+_setup_logging()
 
 logger = logging.getLogger(__name__)
 
@@ -660,5 +702,11 @@ __all__ = [
     "get_config",
     "set_config",
     "load_config",
-    "__version__"
+    "__version__",
+    # Core components (may be None if optional deps missing)
+    "GraphEngine",
+    "Retriever",
+    "EntityLinker",
+    "ContradictionDetector",
+    "TemporalEngine",
 ]

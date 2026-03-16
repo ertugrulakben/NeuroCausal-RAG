@@ -1,4 +1,4 @@
-# NeuroCausal RAG v5.2 - Mimari Dokumantasyonu
+# NeuroCausal RAG v6.1 - Architecture Documentation
 
 ## Sistem Genel Bakis
 

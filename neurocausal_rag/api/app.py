@@ -58,7 +58,7 @@ All endpoints require an API key passed via `X-API-Key` header.
 - Standard: 100 requests/minute
 - Premium: 1000 requests/minute
 """
-API_VERSION = "5.2.0"
+from neurocausal_rag import __version__ as API_VERSION
 
 
 # =============================================================================

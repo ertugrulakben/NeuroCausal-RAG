@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 ---
 
+## [6.1.0] - 2026-03-16
+
+### Quality & Maturity Release
+
+- **Single version source**: All version references now read from `__version__` (was scattered across 4 files)
+- **pyproject.toml**: Modern PEP 517/518 packaging, ready for PyPI
+- **py.typed**: PEP 561 type hint marker
+- **New tests**: API routes, LLM client, config validation, import checks (~30+ new tests)
+- **Expanded exports**: `__all__` now includes GraphEngine, Retriever, EntityLinker, SearchMode
+- **Deprecation warnings**: `learning/discovery.py` now warns users to migrate
+- **Configurable logging**: `NEUROCAUSAL_LOG_LEVEL` environment variable support
+- **Fixed version inconsistencies**: config.py (4.2.0), api/app.py (5.2.0) → all unified to 6.1.0
+
+---
+
 ## [6.0.0] - 2026-03-16
 
 ### Open Source Release

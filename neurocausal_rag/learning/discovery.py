@@ -1,17 +1,26 @@
 """
-NeuroCausal RAG - Automatic Causal Discovery
-LLM-based and embedding-based causal relationship extraction
+NeuroCausal RAG - Automatic Causal Discovery (DEPRECATED)
 
-Bu modül, manuel tanımlama yerine otomatik nedensellik keşfi yapar.
-İki ana yaklaşım:
-1. LLM-based: GPT-4o-mini ile metinlerden nedensel ilişkileri çıkarma
-2. Embedding-based: Vektör uzayında nedensel yapı analizi
+.. deprecated::
+    This module is deprecated. Use ``semantic_discovery`` or ``deep_discovery`` instead.
+
+LLM-based and embedding-based causal relationship extraction.
+Bu modul, manuel tanimlama yerine otomatik nedensellik kesfi yapar.
 """
 
+import warnings
 import numpy as np
 from typing import List, Dict, Optional, Tuple
 import logging
 import re
+
+warnings.warn(
+    "neurocausal_rag.learning.discovery is deprecated. "
+    "Use neurocausal_rag.learning.semantic_discovery or "
+    "neurocausal_rag.learning.deep_discovery instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 from ..config import LearningConfig
 from ..embedding.text import cosine_similarity
@@ -53,16 +62,24 @@ class AutoCausalDiscovery:
     """
     Automatic Causal Relationship Discovery Engine.
 
-    İki ana keşif yöntemi:
-    1. Pattern-based: Regex ile nedensellik kalıpları arama
-    2. LLM-based: GPT-4o-mini ile nedensel analiz (daha doğru ama maliyetli)
-    3. Embedding-based: Vektör benzerliği + temporal/logical analiz
+    .. deprecated::
+        Use ``SemanticDiscovery`` from ``semantic_discovery`` or
+        ``DeepDiscovery`` from ``deep_discovery`` instead.
 
-    Bu, manuel nedensellik tanımına alternatif olarak sistemin
-    kendi kendine öğrenmesini sağlar.
+    Iki ana kesif yontemi:
+    1. Pattern-based: Regex ile nedensellik kaliplari arama
+    2. LLM-based: GPT-4o-mini ile nedensel analiz (daha dogru ama maliyetli)
+    3. Embedding-based: Vektor benzerligi + temporal/logical analiz
     """
 
     def __init__(self, config: Optional[LearningConfig] = None):
+        warnings.warn(
+            "AutoCausalDiscovery is deprecated. Use SemanticDiscovery from "
+            "neurocausal_rag.learning.semantic_discovery or DeepDiscovery from "
+            "neurocausal_rag.learning.deep_discovery instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.config = config or LearningConfig()
         self._llm_client = None
 
@@ -316,14 +333,23 @@ class CausalInferenceEngine:
     """
     Pearl's Do-Calculus based causal inference.
 
-    Bu, korelasyon vs nedensellik ayrımını matematiksel olarak yapar.
-    P(Y|do(X)) vs P(Y|X) farkını hesaplar.
+    .. deprecated::
+        Use ``DeepDiscovery`` from ``deep_discovery`` for advanced causal inference.
 
-    NOT: Bu tam implementasyon için DoWhy veya CausalNex gibi
-    kütüphaneler gerekir. Bu temel bir iskelet.
+    Bu, korelasyon vs nedensellik ayrimini matematiksel olarak yapar.
+    P(Y|do(X)) vs P(Y|X) farkini hesaplar.
+
+    NOT: Bu tam implementasyon icin DoWhy veya CausalNex gibi
+    kutuphaneler gerekir. Bu temel bir iskelet.
     """
 
     def __init__(self, graph):
+        warnings.warn(
+            "CausalInferenceEngine is deprecated. Use DeepDiscovery from "
+            "neurocausal_rag.learning.deep_discovery instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.graph = graph
 
     def do_intervention(

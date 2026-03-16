@@ -4,7 +4,7 @@ Pydantic-based type-safe configuration
 
 Yazar: Ertugrul Akben
 E-posta: i@ertugrulakben.com
-Versiyon: 4.2.0
+Versiyon: 6.1.0
 """
 
 from pydantic import BaseModel, Field, field_validator

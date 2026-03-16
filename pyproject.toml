@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neurocausal-rag"
+version = "6.1.0"
+description = "Causality-aware RAG with multi-hop retrieval, contradiction detection, and temporal reasoning"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Ertugrul Akben", email = "i@ertugrulakben.com"}
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
+keywords = ["rag", "causal-inference", "nlp", "information-retrieval", "knowledge-graph", "multi-hop"]
+dependencies = [
+    "networkx>=3.0,<4.0",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "sentence-transformers>=2.2",
+    "pyyaml>=6.0",
+    "pydantic>=2.0",
+    "python-dotenv>=1.0",
+    "openai>=1.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+]
+
+[project.optional-dependencies]
+enterprise = [
+    "neo4j>=5.0",
+    "pymilvus>=2.3.0",
+    "spacy>=3.5",
+]
+agent = [
+    "langchain>=0.1.0",
+    "langgraph>=0.0.20",
+]
+ui = [
+    "streamlit>=1.28",
+    "pyvis>=0.3.2",
+    "matplotlib>=3.7",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-mock>=3.0",
+    "httpx>=0.24.0",
+    "black>=23.0",
+    "isort>=5.12",
+    "mypy>=1.0",
+]
+all = [
+    "neurocausal-rag[enterprise,agent,ui,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/ertugrulakben/NeuroCausal-RAG"
+Repository = "https://github.com/ertugrulakben/NeuroCausal-RAG.git"
+Issues = "https://github.com/ertugrulakben/NeuroCausal-RAG/issues"
+
+[tool.setuptools.packages.find]
+include = ["neurocausal_rag*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
