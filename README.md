@@ -10,7 +10,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/version-6.1.0-blue?style=for-the-badge" alt="v6.0.0" />
   <img src="https://img.shields.io/badge/python-3.10+-green?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10+" />
-  <img src="https://img.shields.io/badge/tests-187_passed-brightgreen?style=for-the-badge" alt="187 Tests" />
+  <img src="https://img.shields.io/badge/tests-382_passed-brightgreen?style=for-the-badge" alt="187 Tests" />
   <img src="https://img.shields.io/badge/license-MIT-orange?style=for-the-badge" alt="MIT License" />
 </p>
 
@@ -241,14 +241,18 @@ pytest tests/ --cov=neurocausal_rag --cov-report=html
 ```
 
 ```
-Test Distribution (v6.0)
+Test Distribution (v6.1)
 ├── Core (graph, node, edge): 35 tests
 ├── Search (retriever, multi_hop, optimizer, decomposer): 66 tests
 ├── Learning (discovery, entity, temporal, contradiction): 42 tests
 ├── Memory: 24 tests
-└── Integration: 20 tests
+├── Integration: 20 tests
+├── API Routes: 58 tests
+├── Config Validation: 70 tests
+├── LLM Client: 34 tests
+└── Imports & Exports: 33 tests
 ─────────────────────────────
-Total: 187 tests, 0 failures
+Total: 382 tests, 0 failures
 ```
 
 ## Project Structure

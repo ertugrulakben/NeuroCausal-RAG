@@ -26,7 +26,7 @@ All notable changes to this project are documented in this file.
 First public release of NeuroCausal RAG. Production-deployed 2 months before global academia published similar research (CC-RAG, UIUC June 2025).
 
 #### Highlights
-- **187 tests** with comprehensive coverage
+- **382 tests** with comprehensive coverage
 - **11,382 LOC** across 45+ Python files
 - **6 search modes** (Balanced, Encyclopedia, Detective, Hub, Explorer, Fact-Checker)
 - **Multi-hop retrieval** with bridge document discovery
